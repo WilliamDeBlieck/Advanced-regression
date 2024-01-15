@@ -1,0 +1,20 @@
+thirtytwenty.lik <- ggplot(thirtytwenty.frame,aes(x=p,y=Lik)) +   
+      geom_line() + 
+      labs(x="p",y="Likelihood",title="(a) \n30 boys, 20 girls Likelihood")+
+      theme(axis.ticks = element_blank(), axis.text.y = element_blank())
+      
+    thirtytwenty.log <- ggplot(thirtytwenty.frame,aes(x=p,y=logLik)) + 
+      geom_line() + 
+      labs(x="p",y="logLikelihood",title="(b) \n30 boys, 20 girls log(Likelihood)") +
+      theme(axis.ticks = element_blank(), axis.text.y = element_blank())
+    
+    sixhundred.lik <- ggplot(sixhundred.frame,aes(x=p,y=Lik)) + geom_line() + 
+      labs(x="p",y="Likelihood",title="(c) \n600 boys, 400 girls Likelihood") +
+      theme(axis.ticks = element_blank(), axis.text.y = element_blank())
+    
+    sixhundred.log <- ggplot(sixhundred.frame,aes(x=p,y=logLik)) + 
+      geom_line() + 
+      labs(x="p",y="logLikelihood",title="(d) \n600 boys, 400 girls log(Likelihood)") +
+      theme(axis.ticks = element_blank(), axis.text.y = element_blank())
+    
+    grid.arrange(thirtytwenty.lik,sixhundred.lik,thirtytwenty.log,sixhundred.log,ncol=2)

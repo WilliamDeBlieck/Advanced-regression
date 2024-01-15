@@ -1,0 +1,31 @@
+Comp <- c("B","G","BB","BG","GB","GGB","GBB","Total")
+  Likcomp1 <- c("$p_B$",
+                "($1-p_B$)",
+                "$p^2_B$",
+                "$p_B(1-p_B)$",
+                "$(1-p_B)p_B$",
+                "$(1-p_B)^2 p_B$",
+                "$(1-p_B)p^2_B$",
+                " ")
+  Numfamis <- c(6,7,5,4,5,1,2,30)
+  Likcomp2 <- c("$p^6_B$",
+                "$(1-p_B)^7$",
+                "$p^{10}_B$",
+                "$p^4_B(1-p_B)^4$",
+                "$(1-p_B)^5 p^5_B$",
+                "$(1-p_B)^2 p_B$",
+                "$(1-p_B)^2 p^4_B$",
+                " ")
+  
+  #lik50.tab
+  table2chp2 <- data.frame(Comp, Likcomp1, Numfamis, Likcomp2)
+  kable(table2chp2, booktabs = T,
+  col.names = c("Composition",
+                      "Likelihood contribution for one family",
+                      "Number of families",
+                      "Likelihood contribution for multiple families"),
+        caption = "The likelihood factors for the 
+                      hypothetical data set of n=50 children.", 
+        escape=F) %>%
+    column_spec(c(2,4), width = "4cm") %>% 
+    kable_styling(latex_options = "scale_down")

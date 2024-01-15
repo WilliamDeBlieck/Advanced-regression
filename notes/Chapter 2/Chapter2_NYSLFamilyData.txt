@@ -1,0 +1,35 @@
+    Famcomp <- c("B","G","BB","BG","GB","GG","BBB","BBG",
+                 "BGG","BGB","GBB","GGB","GBG","GGG")
+    Numfams <- c(930,951,582,666,666,530,186,177,173,
+                 148,151,125,182,159)
+    Numchild <- c(930,951,1164,1332,1332,1060,558,531,
+                  519,444,453,375,546,477)
+    Malesfemales <- c("97:100"," ",
+                      "104:100"," "," "," ",
+                      "104:100"," "," "," "," "," "," "," ")
+    PB <- c("0.494", " ","0.511"," "," "," ","0.510"," "," ",
+            " "," "," "," "," ")
+    
+    #Family comp data table
+    table5chp2 <- data.frame(Famcomp, Numfams, Numchild, 
+                             Malesfemales, PB)
+    kable(table5chp2, 
+          col.names = c("Family Composition",
+                        "Number of families", "Number of children",
+                        "males : females", "p_B"),
+          caption = "Number of families and children in families with given composition in NLSY data. Sex ratio and proportion males are given by family size.") %>% 
+      column_spec(1:5, width = "3cm") %>% 
+      kable_styling(latex_options = "scale_down")
+
+
+# Comparing Criteria (wait to run)
+    Untcol <- c("max log-likelihood","AIC","BIC")
+    Waitboy <- c(-14661.17,29324.33,29331.61)
+    Waitgirl <- c(-14715.65,29433.31,29440.58)
+    
+    tab1chp2 <- data.frame(Untcol,Waitboy,Waitgirl)
+    colnames(tab1chp2) <- c(" ","Waiting for a boy","Waiting for a girl")
+    kable(tab1chp2, booktabs=T, 
+          caption="Measures of model performance with NLSY data: Waiting for a Boy vs. Waiting for a Girl Model.") %>%
+      kable_styling(full_width = F)
+

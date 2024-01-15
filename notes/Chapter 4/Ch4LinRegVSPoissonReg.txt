@@ -1,0 +1,88 @@
+library(gridExtra)
+library(knitr)
+library(kableExtra)
+library(mosaic)
+library(xtable)
+library(pscl) 
+library(multcomp)
+library(pander)
+library(MASS)
+library(tidyverse)
+
+## Sample data for graph of OLS normality assumption
+## Code from https://stackoverflow.com/questions/31794876/ggplot2-how-to-curve-small-gaussian-densities-on-a-regression-line?rq=1
+
+set.seed(0)
+dat <- data.frame(x=(x=runif(10000, 0, 50)),
+                  y=rnorm(10000, 10*x, 100))
+
+## breaks: where you want to compute densities
+breaks <- seq(0, max(dat$x), len=5)
+dat$section <- cut(dat$x, breaks)
+
+## Get the residuals
+dat$res <- residuals(lm(y ~ x, data=dat))
+
+## Compute densities for each section, flip the axes, add means 
+## of sections.  Note: densities need to be scaled in relation 
+## to section size (2000 here)
+dens <- do.call(rbind, lapply(split(dat, dat$section), function(x) {
+  d <- density(x$res, n=5000)
+  res <- data.frame(x=max(x$x)- d$y*1000, y=d$x+mean(x$y))
+  res <- res[order(res$y), ]
+  ## Get some data for normal lines as well
+  xs <- seq(min(x$res), max(x$res), len=5000)
+  res <- rbind(res, data.frame(y=xs + mean(x$y),
+                               x=max(x$x) - 1000*dnorm(xs, 0, sd(x$res))))
+  res$type <- rep(c("empirical", "normal"), each=5000)
+  res
+}))
+dens$section <- rep(levels(dat$section), each=10000)
+
+ols_assume <- ggplot(dat, aes(x, y)) +
+  geom_point(size = 0.1, alpha = .25) +
+  geom_smooth(method="lm", fill=NA, lwd=2) +
+  geom_path(data=dens[dens$type=="normal",], 
+            aes(x, y, group=section), 
+            color="salmon", lwd=1.1) +
+  theme_bw() +
+  geom_vline(xintercept=breaks, lty=2)
+
+# Now make Poisson regression picture
+set.seed(0)
+dat <- data.frame(x=(x=runif(1000, 0, 20)),
+                  y=rpois(1000, exp(.1*x)))
+
+## breaks: where you want to compute densities
+breaks <- seq(2, max(dat$x), len=5)
+dat$section <- cut(dat$x, breaks)
+
+## Get the residuals
+dat$res <- dat$y - .1*dat$x
+
+## Compute densities for each section, flip the axes, add means
+## of sections.  Note: densities need to be scaled in relation 
+## to section size
+dens <- do.call(rbind, lapply(split(dat, dat$section), function(x) {
+  d <- density(x$res, n=500)
+  res <- data.frame(x=max(x$x)- d$y*10, y=d$x+mean(x$y))
+  res <- res[order(res$y), ]
+  ## Get some data for poisson lines as well
+  xs <- seq(min(x$y), max(x$y), len=500)
+  res <- rbind(res, data.frame(y=xs,
+                               x=max(x$x) - 10*dpois(round(xs), exp(.1*max(x$x)))))
+  res$type <- rep(c("empirical", "poisson"), each=500)
+  res
+}))
+dens$section <- rep(levels(dat$section), each=1000)
+
+pois_assume <- ggplot(dat, aes(x, jitter(y, .25))) +
+  geom_point(size = 0.1) +
+  geom_smooth(method="loess", fill=NA, lwd=2) +
+  geom_path(data=dens[dens$type=="poisson",], 
+            aes(x, y, group=section), 
+            color="salmon", lwd=1.1) +
+  theme_bw() + ylab("y") + xlab("x") +
+  geom_vline(xintercept=breaks, lty=2)
+
+grid.arrange(ols_assume, pois_assume, ncol = 2)

@@ -1,0 +1,25 @@
+---
+title: "RMarkdown Easy Template"
+author: "Your Name"
+date: "`r format(Sys.time(), '%m/%d/%Y')`"
+theme: "Luebeck"
+output: html_document
+fig_height: 3
+---
+
+This is to be used as a starting template for homework/notes your write in the course. It is not intended to teach you how to use RMarkdown. See the RMarkdown Cheatsheet on our Moodle page for help (or Google it, many good sources). 
+
+The following code will link up a folder on your computer to be your working directory for this entire RMarkdown file. You will need change the string to your own file location (where you are keeping the data). 
+
+```{r, setup, include=FALSE}
+knitr::opts_knit$set(root.dir = "G:/My Drive/Cornell College/Cornell Classes/STA 355/Materials Used in Class")
+library(nlme)
+```
+
+Code Goes in a "chunk" as seen below. You gray area shows if your have correctly set up the chunk. 
+```{r}
+x = 1:10
+print(x)
+```
+
+Comments/answers not in chunks. 
