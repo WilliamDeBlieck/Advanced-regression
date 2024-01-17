@@ -1,10 +1,6 @@
 ---
 title: "Chapter 1"
 subtitle: "Introduction"
-output:
-  html_document: default
-  pdf_document:
-    number_sections: yes
 ---
 
 \mainmatter
@@ -1142,7 +1138,7 @@ Normallity: The Normal Q-Q graph looks roughly normal
 Equal Varience: No influential points in res vs levrage
     g. Create a new variable, `logsqft`, the natural log of `sqft`. Fit Model 3 where `price` and `logsqft` are the response and explanatory variables, respectively. Write out the regression line equation.
     
-    ```{R}
+```{r}
 houses <- houses %>%
   mutate(logsqft = log(sqft))
 houses.model3 <- lm(price~logsqft, data=houses)
