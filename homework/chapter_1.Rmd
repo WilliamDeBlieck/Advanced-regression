@@ -1130,14 +1130,89 @@ logprice = 12.221846 + 0.0003987sqft
 The price increases by 1.000399 when the sqft increases by 1.
     
     f. Are LLSR assumptions satisfied in Model 2? Why or why not?
+```{R}
+plot(houses.model2)
+```
+
+Linearity: The residuals vs fitted plot shows that we do not pass the assumtion of linearity
+<br>
+Independence: As long as houes are randomly sampled we pass the assumption of independence.
+<br>
+Normallity: The Normal Q-Q graph looks roughly normal
+Equal Varience: No influential points in res vs levrage
     g. Create a new variable, `logsqft`, the natural log of `sqft`. Fit Model 3 where `price` and `logsqft` are the response and explanatory variables, respectively. Write out the regression line equation.
+    
+    ```{R}
+houses <- houses %>%
+  mutate(logsqft = log(sqft))
+houses.model3 <- lm(price~logsqft, data=houses)
+coef(summary(houses.model3))
+```
+ price = −3451377.1 + 528647.5logsqft
+    
     h. How does predicted `price` change as `logsqft` increases by 1 in Model 3?
+As logsqft increases by 1 price increases by 528647.5.
     i. How does predicted `price` change as `sqft` increases by 1\%? As a hint, this is the same as multiplying `sqft` by 1.01.
+    
+```{R}
+coef(summary(houses.model3))
+```
+
+```{R}
+log(1.01) * 528647.5
+```
+
+As sqft increases by 1% price increases by 5260.218
+
     j. Are LLSR assumptions satisfied in Model 3? Why or why not?
+```{R}
+plot(houses.model3)
+```
+
+Linearity: Massive curve in res vs fitted. Does not pass
+Indepdence: As long as houses are a random sample pass
+Normallity: Massive curve in normal Q-Q. Does not pass
+Equal Varience: No points of intrest in res vs levrage
     k. Fit Model 4, with `logsqft` and `logprice` as the response and explanatory variables, respectively.  Write out the regression line equation.
+    
+    
+```{R}
+houses.model4 <- lm(logprice~logsqft, data=houses)
+summary(houses.model4)
+```
+ logprice = 6.7299 + 0.8368logsqft
+ 
+ 
     l. In Model 4, what is the effect on `price` corresponding to a 1\% increase in `sqft`?
+    
+```{R}
+coef(summary(houses.model4))
+```
+
+```{R}
+exp(log(1.01) * 0.836771)
+```
+
+1.008361
+
     m. Are LLSR assumptions satisfied in Model 4? Why or why not?
+```{r}
+plot(houses.model4)
+
+```
+Linearity: Fitted vs res plot shows curve. Does not pass
+Independence: As long as houses are randomly sampled pass
+Normality: Normal Q-Q Normallity is showen all points close to line pass
+Equal Varience: No points of intrest.
+
     n. Find another explanatory variable which can be added to Model 4 to create a model with a higher adjusted $R^2$ value. Interpret the coefficient of this added variable.
+
+
+```{R}   
+houses.finalmodel <- lm(logprice~logsqft+bedrooms, data=houses)
+summary(houses.finalmodel)
+```
+    Adding in Bedrooms increase adj r^2 from .4555 to .4647. For every extra bedroom the logprice  decreases by .0695
     
 ### Open-Ended Exercises
 1. **The Bechdel Test.** In April, 2014, website FiveThirtyEight published the article, "The Dollar-And-Cents Case Against Hollywood’s Exclusion of Women" [@Hickey2014]. There, they analyze returns on investment for 1,615 films released between 1990 and 2013 based on the Bechdel test. The test, developed by cartoonist Alison Bechdel, measures gender bias in films by checking if a film meets three criteria:
@@ -1159,6 +1234,92 @@ The price increases by 1.000399 when the sqft increases by 1.
   </ul>
   
     With this in mind, carry out your own analysis. Does passing the Bechdel test have any effect on a film's return on investment? 
+    
+```{R}
+films <- read.csv("data/bechdel.csv")
+films <- na.omit(films)
+
+```
+
+```{R}
+#Not looking at intgross domgross introi domroi as they prob correlate with totals
+cor(subset(films, select=c(pass, year, budget, totalGross, totalROI)))
+
+```
+
+```{R}
+# Select relevant columns from your dataset
+films <- films[c("totalROI", "year", "budget", "totalGross", "pass")]
+
+# Loop through pairs of variables
+for (i in 1:(ncol(films)-1)) {
+  for (j in (i+1):ncol(films)) {
+    
+    # Calculate correlation between variables i and j
+    correlation_test_ij <- cor.test(films[[i]], films[[j]])
+    correlation_coefficient_ij <- correlation_test_ij$estimate
+    r_squared_ij <- correlation_coefficient_ij^2
+    
+    cat("\nCorrelation between", names(films)[i], "and", names(films)[j], "is:", correlation_coefficient_ij)
+    cat("\nR-squared:", r_squared_ij)
+    
+    # Check if i is not "totalROI"
+    if (names(films)[i] != "totalROI") {
+      # Calculate correlation and r^2 with the interaction term of i and j
+      interaction_term <- films[[i]] * films[[j]]
+      correlation_test_interaction <- cor.test(interaction_term, films$totalROI)
+      correlation_coefficient_interaction <- correlation_test_interaction$estimate
+      r_squared_interaction <- correlation_coefficient_interaction^2
+      
+      cat("\nInteraction Correlation between", names(films)[i], ":", names(films)[j], "and totalROI is:", correlation_coefficient_interaction)
+      cat("\nInteraction R-squared:", r_squared_interaction)
+    }
+  }
+}
+
+
+```
+Budget and totalgross have and r^2 of .48. They seem to be compounding. Budget has a higher r^2 with pass so I shall only use it.
+
+```{R}
+films.model1 <- lm(totalROI~pass, data=films)
+summary(films.model1)
+```
+
+As seen previously the adj r sqrd is very small for this model. Pass is not a good predictor for TotalROI
+
+```{R}
+films.model2 <- lm(totalROI~totalGross + totalGross:pass + pass + budget, data=films)
+summary(films.model2)
+```
+```{R}
+films.model3 <- lm(totalROI~totalGross + totalGross:pass + budget, data=films)
+summary(films.model3)
+```
+
+```{R}
+films.model4 <- lm(totalROI~totalGross + pass + budget, data=films)
+summary(films.model4)
+```
+
+```{R}
+films.model5 <- lm(totalROI~totalGross + budget, data=films)
+summary(films.model5)
+```
+As seen in the models 2-5 adj r^2 is highest for totalGross + totalGross:pass + pass + budget.
+
+Still this model is not helpful in finding ROI. New parameters would be needed to accuractly model ROI.
+
+```{R}
+plot(films.model2)
+```
+Line is not passed at all for this.
+Linearity: linearity is possibile but slight curve is seen.
+Indpendence: As long as movies are randomly sampled independence is pass
+Normallity: Normal Q-Q shows no normallity not pass
+Equal variance: Not pass
+
+Only less than 5% of the data is ever explained by the model and the model does not pass LINE. The Bechdel test is not a good predictor for ROI in films. Other parameters would be needed to properly model ROI.
 
 
 1. **Waitress tips.**  A student collected data from a restaurant where she was a waitress [@Dahlquist2011].  The student was interested in learning under what conditions a waitress can expect the largest tips---for example:  At dinner time or late at night?  From younger or older patrons?  From patrons receiving free meals?  From patrons drinking alcohol?  From patrons tipping with cash or credit?  And should tip amount be measured as total dollar amount or as a percentage? Data can be found in `TipData.csv`. Here is a quick description of the variables collected:
