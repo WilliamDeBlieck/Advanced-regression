@@ -27,3 +27,5 @@ Lik.f(nBoys = 30, nGirls = 20, nGrid = 50)
 Lik.f(nBoys = 30, nGirls = 20, nGrid = 1000)
 
 ```
+
+Yeah this is the only piece of visable code in the whole chapter.
