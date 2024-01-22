@@ -37,7 +37,7 @@ testplot
 ### Question 2
 2. Suppose the families with an "only child" were excluded for the Sex Conditional Model. How might the estimates for the three parameters be affected?  Would it still be possible to perform a Likelihood Ratio Test to compare the Sex Unconditional and Sex Conditional Models?  Why or why not?
 <br>
-For conditional singleton families greatly help estimate Pb|N. Removing singleton families would affect all 3 parameters though. For unconditional models it would make the sample size smaller worsening the parameter estimate. It would still be possbile to run a Likelihood Ratio Test if both models had no singleton families as the Likelihood Ratio Test compares the likelihoods of the two models for the same data.
+For conditional singleton families greatly help estimate Pb|N. Removing singleton families would not affect Pb|b_{bias} Pb|g_{bias} though. For unconditional models it would make the sample size smaller worsening the parameter estimate. It would still be possbile to run a Likelihood Ratio Test if both models had no singleton families as the Likelihood Ratio Test compares the likelihoods of the two models for the same data.
     
 ### Question 3
     
@@ -162,10 +162,6 @@ See code output. First output is all loglik and 2nd is best loglik
 
 ### Open-Ended Exercises
     
-1. __Another stopping rule model: balance-preference.__ 
-Can you construct a model which suggests that childbearing is stopped when couples have a boy *and* a girl?  Define the parameter(s) for balance-preference stopping combined with the sex conditional model and write out likelihood contributions for the same family compositions that appear in Table \@ref(tab:table3chp2).
-    
-    - **Extra Credit** Obtain the MLEs for your balance-preference model parameters and interpret the results.  Then, compare the balance-preference stopping rule model to the random stopping model using a LRT.
 
 2. **The hot hand in basketball.**  @Gilovich1985 wrote a controversial but compelling article claiming that there is no such thing as “the hot hand” in basketball.  That is, there is no empirical evidence that shooters have stretches where they are more likely to make consecutive shots, and basketball shots are essentially independent events.  One of the many ways they tested for evidence of a “hot hand” was to record sequences of shots for players under game conditions and determine if players are more likely to make shots after made baskets than after misses.  For instance, assume we recorded data from one player's first 5 three-point attempts over a 5-game period.  We can assume games are independent, but we’ll consider two models for shots within a game:
 
@@ -174,7 +170,12 @@ Can you construct a model which suggests that childbearing is stopped when coupl
     - Hot Hand (2 parameters): $p_B$ = probability of making a basket after a miss (or the first shot of a game); $p_{B|B}$ = probability of making a basket after making the previous shot.
 
 
-Find the MLEs for the parameters in each model, and then use those MLEs to determine if there's significant evidence that the hot hand exists.
+    a. Fill out Table \@ref(tab:hothandchp2)---write out the contribution of each game to the likelihood for both models along with the total likelihood for each model.
+
+    b. Given that, for the No Hot Hand model, $\textrm{Lik}(p_B)=p_B^{10}(1-p_B)^{15}$ for the 5 games where we collected data, how do we know that 0.40 (the maximum likelihood estimator (MLE) of $p_B$) is a better estimate than, say, 0.30?
+
+    c. Find the MLEs for the parameters in each model, and then use those MLEs to determine if there's significant evidence that the hot hand exists.
+
 
 ```{r, include=FALSE}
 Game <- c(1,2,3,4,5, "Total")
@@ -193,4 +194,74 @@ kable(hothandchp2, booktabs = T,
   column_spec(1:4, width = "2cm") %>% 
   kable_styling(latex_options = "scale_down")
 ```
+
+```{R}
+
+count_overlapping_occurrences <- function(text, pattern) {
+  count <- 0
+  for (i in 1:(nchar(text) - nchar(pattern) + 1)) {
+    substring <- substr(text, i, i + nchar(pattern) - 1)
+    if (substring == pattern) {
+      count <- count + 1
+    }
+  }
+  return(count)
+}
+
+for (i in 1:5) {
+  shots <- strsplit(as.character(hothandchp2$First5[i]), "")[[1]]
+  
+  num_makes <- sum(shots == "B")
+  num_misses <- sum(shots == "M")
+  
+  num_BB <- count <- count_overlapping_occurrences(hothandchp2$First5[i], "BB")
+  num_BM <- count <- str_count(hothandchp2$First5[i], "BM")
+  
+  hothandchp2$NoHotHand[i] <- paste0("p^", num_makes, "_B (1 - p_B)^", num_misses)
+
+   hothandchp2$HotHand[i] <- paste0("p^", num_makes - num_BB, "_B (1 - p_B)^", num_misses - num_BM, 
+                                     "p^", num_BB, "_B|B (1 - p_B|B)^", num_BM)
+}
+
+hothandchp2$NoHotHand[6] <- "p^10_B (1 - p_B)^15"
+hothandchp2$HotHand[6] <- "p^7_B (1 - p_B)^1p^3-1_B|B (1 - p_B|B)^4"
+
+print(hothandchp2)
+```
+
+
+```{R}
+likelihood_no_hot_hand_model <- function(p_B) {
+  return(p_B^10 * (1 - p_B)^15)
+}
+
+likelihood_0.40 <- likelihood_no_hot_hand_model(0.40)
+
+likelihood_0.30 <- likelihood_no_hot_hand_model(0.30)
+
+cat("Likelihood for p_B = 0.40:", likelihood_0.40, "\n")
+cat("Likelihood for p_B = 0.30:", likelihood_0.30, "\n")
+
+```
+
+Likelihood for .40 is better.
+
+
+```{R}
+likelihood_no_hot_hand_model <- function(p_B) {
+  return(p_B^10 * (1 - p_B)^15)
+}
+log_likelihood_no_hot_hand_model <- function(p_B) {
+  return(10 * log(p_B) + 15 * log(1 - p_B))
+}
+mle_result <- optim(par = 0.5, fn = function(p) -log_likelihood_no_hot_hand_model(p), method = "Brent", lower = 0, upper = 1)
+mle_p_B <- mle_result$par
+mle_likelihood <- likelihood_no_hot_hand_model(mle_p_B)
+cat("MLE for p_B:", mle_p_B, "\n")
+cat("Likelihood at MLE:", mle_likelihood, "\n")
+
+```
+
+
+
 

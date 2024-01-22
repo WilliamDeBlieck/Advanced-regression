@@ -616,11 +616,12 @@ Conditional Model. How might the estimates for the three parameters be
 affected? Would it still be possible to perform a Likelihood Ratio Test
 to compare the Sex Unconditional and Sex Conditional Models? Why or why
 not? <br> For conditional singleton families greatly help estimate Pb|N.
-Removing singleton families would affect all 3 parameters though. For
-unconditional models it would make the sample size smaller worsening the
-parameter estimate. It would still be possbile to run a Likelihood Ratio
-Test if both models had no singleton families as the Likelihood Ratio
-Test compares the likelihoods of the two models for the same data.</li>
+Removing singleton families would not affect Pb|b_{bias} Pb|g_{bias}
+though. For unconditional models it would make the sample size smaller
+worsening the parameter estimate. It would still be possbile to run a
+Likelihood Ratio Test if both models had no singleton families as the
+Likelihood Ratio Test compares the likelihoods of the two models for the
+same data.</li>
 </ol>
 </div>
 <div id="question-3" class="section level3">
@@ -752,20 +753,8 @@ compare these two models.</li>
 </div>
 <div id="open-ended-exercises" class="section level3">
 <h3>Open-Ended Exercises</h3>
-<ol style="list-style-type: decimal">
-<li><p><strong>Another stopping rule model: balance-preference.</strong>
-Can you construct a model which suggests that childbearing is stopped
-when couples have a boy <em>and</em> a girl? Define the parameter(s) for
-balance-preference stopping combined with the sex conditional model and
-write out likelihood contributions for the same family compositions that
-appear in Table @ref(tab:table3chp2).</p>
-<ul>
-<li><strong>Extra Credit</strong> Obtain the MLEs for your
-balance-preference model parameters and interpret the results. Then,
-compare the balance-preference stopping rule model to the random
-stopping model using a LRT.</li>
-</ul></li>
-<li><p><strong>The hot hand in basketball.</strong> <span class="citation">@Gilovich1985</span> wrote a controversial but
+<ol start="2" style="list-style-type: decimal">
+<li><strong>The hot hand in basketball.</strong> <span class="citation">@Gilovich1985</span> wrote a controversial but
 compelling article claiming that there is no such thing as “the hot
 hand” in basketball. That is, there is no empirical evidence that
 shooters have stretches where they are more likely to make consecutive
@@ -775,8 +764,7 @@ sequences of shots for players under game conditions and determine if
 players are more likely to make shots after made baskets than after
 misses. For instance, assume we recorded data from one player’s first 5
 three-point attempts over a 5-game period. We can assume games are
-independent, but we’ll consider two models for shots within a
-game:</p></li>
+independent, but we’ll consider two models for shots within a game:</li>
 </ol>
 <ul>
 <li><p>No Hot Hand (1 parameter): <span class="math inline">\(p_B\)</span> = probability of making a basket
@@ -787,11 +775,20 @@ making a basket).</p>
 probability of making a basket after a miss (or the first shot of a
 game); <span class="math inline">\(p_{B|B}\)</span> = probability of
 making a basket after making the previous shot.</li>
-</ul></li>
 </ul>
-<p>Find the MLEs for the parameters in each model, and then use those
-MLEs to determine if there’s significant evidence that the hot hand
-exists.</p>
+<ol style="list-style-type: lower-alpha">
+<li><p>Fill out Table @ref(tab:hothandchp2)—write out the contribution
+of each game to the likelihood for both models along with the total
+likelihood for each model.</p></li>
+<li><p>Given that, for the No Hot Hand model, <span class="math inline">\(\textrm{Lik}(p_B)=p_B^{10}(1-p_B)^{15}\)</span>
+for the 5 games where we collected data, how do we know that 0.40 (the
+maximum likelihood estimator (MLE) of <span class="math inline">\(p_B\)</span>) is a better estimate than, say,
+0.30?</p></li>
+<li><p>Find the MLEs for the parameters in each model, and then use
+those MLEs to determine if there’s significant evidence that the hot
+hand exists.</p></li>
+</ol></li>
+</ul>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 Data for Open-ended Exercise 2. (B = made basket. M = missed basket.)
@@ -886,6 +883,69 @@ Total
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>count_overlapping_occurrences &lt;- function(text, pattern) {
+  count &lt;- 0
+  for (i in 1:(nchar(text) - nchar(pattern) + 1)) {
+    substring &lt;- substr(text, i, i + nchar(pattern) - 1)
+    if (substring == pattern) {
+      count &lt;- count + 1
+    }
+  }
+  return(count)
+}
+
+for (i in 1:5) {
+  shots &lt;- strsplit(as.character(hothandchp2$First5[i]), &quot;&quot;)[[1]]
+  
+  num_makes &lt;- sum(shots == &quot;B&quot;)
+  num_misses &lt;- sum(shots == &quot;M&quot;)
+  
+  num_BB &lt;- count &lt;- count_overlapping_occurrences(hothandchp2$First5[i], &quot;BB&quot;)
+  num_BM &lt;- count &lt;- str_count(hothandchp2$First5[i], &quot;BM&quot;)
+  
+  hothandchp2$NoHotHand[i] &lt;- paste0(&quot;p^&quot;, num_makes, &quot;_B (1 - p_B)^&quot;, num_misses)
+
+   hothandchp2$HotHand[i] &lt;- paste0(&quot;p^&quot;, num_makes - num_BB, &quot;_B (1 - p_B)^&quot;, num_misses - num_BM, 
+                                     &quot;p^&quot;, num_BB, &quot;_B|B (1 - p_B|B)^&quot;, num_BM)
+}
+
+hothandchp2$NoHotHand[6] &lt;- &quot;p^10_B (1 - p_B)^15&quot;
+hothandchp2$HotHand[6] &lt;- &quot;p^7_B (1 - p_B)^1p^3-1_B|B (1 - p_B|B)^4&quot;
+
+print(hothandchp2)</code></pre>
+<pre><code>##    Game First5           NoHotHand                                  HotHand
+## 1     1  BMMBB   p^3_B (1 - p_B)^2   p^2_B (1 - p_B)^1p^1_B|B (1 - p_B|B)^1
+## 2     2  MBMBM   p^2_B (1 - p_B)^3   p^2_B (1 - p_B)^1p^0_B|B (1 - p_B|B)^2
+## 3     3  MMBBB   p^3_B (1 - p_B)^2   p^1_B (1 - p_B)^2p^2_B|B (1 - p_B|B)^0
+## 4     4  BMMMB   p^2_B (1 - p_B)^3   p^2_B (1 - p_B)^2p^0_B|B (1 - p_B|B)^1
+## 5     5  MMMMM   p^0_B (1 - p_B)^5   p^0_B (1 - p_B)^5p^0_B|B (1 - p_B|B)^0
+## 6 Total        p^10_B (1 - p_B)^15 p^7_B (1 - p_B)^1p^3-1_B|B (1 - p_B|B)^4</code></pre>
+<pre class="r"><code>likelihood_no_hot_hand_model &lt;- function(p_B) {
+  return(p_B^10 * (1 - p_B)^15)
+}
+
+likelihood_0.40 &lt;- likelihood_no_hot_hand_model(0.40)
+
+likelihood_0.30 &lt;- likelihood_no_hot_hand_model(0.30)
+
+cat(&quot;Likelihood for p_B = 0.40:&quot;, likelihood_0.40, &quot;\n&quot;)</code></pre>
+<pre><code>## Likelihood for p_B = 0.40: 4.930247e-08</code></pre>
+<pre class="r"><code>cat(&quot;Likelihood for p_B = 0.30:&quot;, likelihood_0.30, &quot;\n&quot;)</code></pre>
+<pre><code>## Likelihood for p_B = 0.30: 2.803388e-08</code></pre>
+<p>Likelihood for .40 is better.</p>
+<pre class="r"><code>likelihood_no_hot_hand_model &lt;- function(p_B) {
+  return(p_B^10 * (1 - p_B)^15)
+}
+log_likelihood_no_hot_hand_model &lt;- function(p_B) {
+  return(10 * log(p_B) + 15 * log(1 - p_B))
+}
+mle_result &lt;- optim(par = 0.5, fn = function(p) -log_likelihood_no_hot_hand_model(p), method = &quot;Brent&quot;, lower = 0, upper = 1)
+mle_p_B &lt;- mle_result$par
+mle_likelihood &lt;- likelihood_no_hot_hand_model(mle_p_B)
+cat(&quot;MLE for p_B:&quot;, mle_p_B, &quot;\n&quot;)</code></pre>
+<pre><code>## MLE for p_B: 0.4</code></pre>
+<pre class="r"><code>cat(&quot;Likelihood at MLE:&quot;, mle_likelihood, &quot;\n&quot;)</code></pre>
+<pre><code>## Likelihood at MLE: 4.930247e-08</code></pre>
 </div>
 </div>
 

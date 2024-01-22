@@ -1,0 +1,37 @@
+```{r load_packages3, message = FALSE}
+# Packages required for Chapter 3
+library(gridExtra)  
+library(knitr) 
+library(kableExtra)
+library(tidyverse)
+```
+
+```{r include=FALSE}
+if(knitr::is_html_output()){options(knitr.table.format = "html")} else {options(knitr.table.format = "latex")}
+```
+
+1. A university's college of sciences is electing a new board of 5 members. There are 35 applicants, 10 of which come from the math department. What distribution could be helpful to model the probability of electing $X$ board members from the math department?
+
+<br>
+
+
+The hypergeometric distribution should be used. The hypergeometric distribution is suitable for situations where you are sampling without replacement from a finite population as it is the distribution of number of sucesses after n trials.
+
+1.  Chapter 1 asked you to consider a scenario where *"The Minnesota Pollution Control Agency is interested in using traffic volume data to generate predictions of particulate distributions as measured in counts per cubic feet."* What distribution might be useful to model this count per cubic foot? Why?
+
+<br>
+
+This is count data. Poisson distribution should be used
+
+
+1. Chapter 1 also asked you to consider a scenario where *"Researchers are attempting to see if socioeconomic status and parental stability are predictive of low birthweight.  They classify a low birthweight as below 2500 g, hence our response is binary: 1 for low birthweight, and 0 when the birthweight is not low."* What distribution might be useful to model if a newborn has low birthweight?
+
+<br>
+
+The response variable is binary (1 for low birthweight and 0 for not low birthweight), to model binary outcomes we should use the Bernoulli distribution.
+
+1. Chapter 1 also asked you to consider a scenario where *"Researchers are interested in how elephant age affects mating patterns among males.  In particular, do older elephants have greater mating success, and is there an optimal age for mating among males?  Data collected includes, for each elephant, age and number of matings in a given year."* Which distribution would be useful to model the number of matings in a given year for these elephants? Why?
+
+<br>
+
+This is count data. Poisson distribution should be used.

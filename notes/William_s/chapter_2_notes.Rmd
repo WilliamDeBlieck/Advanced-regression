@@ -1,0 +1,29 @@
+```{r}
+
+library(gridExtra)  
+library(knitr) 
+library(mosaic)
+library(xtable)
+library(kableExtra)
+library(tidyverse) 
+
+```
+
+Calculates the maximum likelihood estimator for the probability of having a boy  given the counts of boys and girls and the number of points in the probability grid.
+```{R}
+Lik.f <- function(nBoys,nGirls,nGrid){
+    # possible values for prob a boy is born
+    pb <- seq(0, 1, length = nGrid)   
+    lik <- pb^{nBoys} * (1 - pb)^{nGirls}
+    # maximum likelihood over nGrid values of pb
+    max(lik)             
+    # value of pb where likelihood maximized
+    pb[lik==max(lik)]    
+  }
+# estimated maximum likelihood estimator for p_B
+Lik.f(nBoys = 30, nGirls = 20, nGrid = 50) 
+
+# more precise MLE for p_B based on finer grid (more points)
+Lik.f(nBoys = 30, nGirls = 20, nGrid = 1000)
+
+```

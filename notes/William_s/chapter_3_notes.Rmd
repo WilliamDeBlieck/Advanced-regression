@@ -1,0 +1,58 @@
+```{r}
+library(gridExtra)  
+library(knitr) 
+library(kableExtra)
+library(tidyverse)
+```
+
+Calculates the probability of getting 2 successes in 10 Bernoulli trials with a success probability of 0.25
+```{R}
+dbinom(2, size = 10, prob = .25)
+```
+
+
+Probability of requiring 2 trials to achieve success in a geometric distribution. Success probability: 1/6.
+```{R}
+dgeom(2, prob = 1/6)
+```
+
+
+Probability of having 0, 1, or 2 failures before observing 10 successes in negative binomial distribution. Success probability: 0.9.
+```{R}
+sum(dnbinom(0:2, size = 10, prob = .9))  
+```
+
+
+Probability of drawing one of any specific card type in 10 draws without replacement from a full deck containing 4 of the card (all suites).
+```{R}
+dhyper(4, m = 4, n = 48, k = 10)
+```
+
+
+Probability of having 0, 1, 2, or 3 events in a Poisson distribution with a mean of 5.
+```{R}
+sum(dpois(0:3, lambda = 5))
+```
+
+
+Probability of a random variable following an exponential distribution with a rate of 1/6 being less than or equal to 10.
+```{R}
+pexp(10, rate = 1/6)
+```
+
+Probability of a variable following a gamma distribution with shape 5 and rate 2 being less than or equal to 3.
+```{R}
+pgamma(3, shape = 5, rate = 2)
+```
+
+
+Probability of a variable has a normal distribution with mean 15 and standard deviation 0.5 being greater than 15.5.
+```{R}
+pnorm(15.5, mean = 15, sd = 0.5, lower.tail = FALSE)
+```
+
+
+Probability of a variable has a beta distribution with shape 4/3 and 2 being greater than 0.8.
+```{R}
+pbeta(0.8, shape1 = 4/3, shape2 = 2, lower.tail = FALSE)
+```
