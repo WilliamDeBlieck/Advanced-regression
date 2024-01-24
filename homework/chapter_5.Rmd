@@ -1,0 +1,35 @@
+For each distribution below,
+
+    - Write the pmf or pdf in one-parameter exponential form, if possible.
+    - Describe an example of a setting where this random variable might be used.
+    - Identify the canonical link function, and
+    - Compute $\mu = -\frac{c'(\theta)}{b'(\theta)}$ and $\sigma^2 = \frac{b''(\theta)c'(\theta)-c''(\theta)b'(\theta)}{[b'(\theta)]^3}$ and compare with known $\E(Y)$ and $\var(Y)$.
+
+a) Binary: Y = 1 for a success, 0 for a failure
+
+  \[P(Y=y;p)=p^{y}(1-p)^{(1-y)}
+  \]
+  
+
+1. **Probability Mass Function (PMF):**
+   \[ P(Y=y; p) = p^{y}(1-p)^{(1-y)} \]
+
+2. **Example Setting:**
+   It could be used to model the probability of a coin landing heads (success) or tails (failure).
+
+3. **Canonical Link Function:**
+   \[ g(\mu) = \log\left(\frac{\mu}{1-\mu}\right) \]
+   
+   The book does not explain this well. Thank you stats.stackexchange for existing.
+
+4. **Compute \(\mu\) and \(\sigma^2\):**
+\(b(\theta) = 1\), \(c(\theta) = \log(1+e^\theta)\), and \(\theta = \log\left(\frac{p}{1-p}\right)\).
+
+   - \( \mu = -\frac{c'(\theta)}{b'(\theta)} \):
+     \[ \mu = -\frac{c'(\theta)}{b'(\theta)} = -\frac{e^\theta}{1+e^\theta} = \frac{1}{1+e^{-\theta}} = p \]
+     
+   - \( \sigma^2 = \frac{b''(\theta)c'(\theta)-c''(\theta)b'(\theta)}{[b'(\theta)]^3} \):
+     \[ \sigma^2 = \frac{0 - e^\theta(1+e^\theta)}{(1+e^\theta)^3} = \frac{e^\theta}{(1+e^\theta)^2} = p(1-p) \]
+
+   - \(\E(Y) = p\)
+   - \(\var(Y) = p(1-p)\)
