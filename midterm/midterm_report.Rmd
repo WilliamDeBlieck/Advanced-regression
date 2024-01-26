@@ -1,0 +1,291 @@
+```{R, warning=FALSE, echo=FALSE}
+library(gridExtra)
+library(knitr)
+library(kableExtra)
+library(mosaic)
+library(xtable)
+library(pscl) 
+library(multcomp)
+library(pander)
+library(MASS)
+library(tidyverse)
+```
+
+
+```{R, warning=FALSE, echo=FALSE}
+falls <- read.csv("geriatric.csv")
+
+head(falls)
+```
+intervention and sex are dummy variables while balance, strength, and number of falls are quantitative.
+
+Let's check if a poisson regression is possible with this data.
+
+
+
+```{R, warning=FALSE, echo=FALSE}
+
+
+falls_data <- falls$number.of.falls
+
+hist(falls_data, breaks = seq(-0.5, max(falls_data) + 0.5, 1),
+     col = "skyblue", main = "Distribution of Visits",
+     xlab = "Number of Visits", ylab = "Frequency")
+
+lambda <- mean(falls_data)
+x <- seq(0, max(falls_data), 1)
+poisson_prob <- dpois(x, lambda)
+lines(x, poisson_prob * length(falls_data), col = "red", lwd = 2)
+legend("topright", legend = c("Observed", "Poisson"), col = c("skyblue", "red"), lwd = c(1, 2))
+
+mtext("Figure 1", side = 1, line = 3, at = 0.5, cex = 0.8, col = "black")
+```
+As seen in figure 1 the number of falls (response) is right skewed. The number of falls is also count data therefor a poisson regression might be usable here. We can also see that it follows closely the poisson distribution. Zero inflated poisson seems to not be necessary in this situation as well due to how it fits the expected poisson distribution. We would use ZIP if instead it did not decrease overall at 2,1, and 0.
+
+```{R, warning=FALSE, echo=FALSE}
+mean_falls <- mean(falls_data)
+var_falls <- var(falls_data)
+
+cat("Mean of Falls:", mean_falls, "\n")
+cat("Variance of Falls:", var_falls, "\n")
+
+print("Figure 2")
+```
+
+As seen in figure 2 mean and variance seem close enough. This means that we pass the mean=varience assumption of a poisson regression which means that all we have to worry about now is indepence and linearity. All trials are independent of each other as well as participants are randomly selected as stated in the initial question. This just leaves linearity as a needed assumption.
+
+```{R, warning=FALSE, echo=FALSE}
+cor_matrix <- cor(falls)
+
+print(cor_matrix)
+print("Figure 3")
+
+
+pairs(falls)
+
+mtext("Figure 4", side = 1, line = 3, at = 0.5, cex = 0.8, col = "black")
+```
+
+As seen in figure 3 there is a strong negative correlation between num falls and intervention, a weak negative correlation between sex and num of falls, and a weak positive correlation between the rest and num of falls. The only correlation of note between explanatory variables is a weak negative correlation between strength and sex which is to be expected. From the figure 4 we can see that there doesn't seem to be any strong log, quad, or non linear correlation between quantitative variables.
+
+
+
+Lets check our linearity assumptions and try and build a model.
+```{R, warning=FALSE, echo=FALSE}
+falls.lm0 <- lm( number.of.falls ~ ., data=falls )
+
+summary(falls.lm0)
+print("Figure 5")
+
+par(mfrow=c(2,2))
+plot(falls.lm0)
+title("Figure 6", side = 1, line = -9, at = 0, cex = 0.8, col = "black")
+```
+While figure 5 shows our linear model using all base parameters as very significant (p-value 9.729e-12) figure 6 shows that our assumptions aren't as sound. Our normallity is far off. On the higher quantile standardized residuals seem to stray far from the line in the Normal QQ plot.
+
+
+Lets see if a transformation can fix this.
+
+```{R, warning=FALSE, echo=FALSE}
+falls.lm_log <- lm(log(number.of.falls +0.00001) ~ ., data = falls)
+
+par(mfrow=c(2,2))
+plot(falls.lm_log)
+title("Figure 7", side = 1, line = -9, at = 0, cex = 0.8, col = "black")
+
+library(MASS)
+
+falls.lm_boxcox <- boxcox(lm(number.of.falls + 0.00001 ~ ., data = falls))
+
+lambda <- falls.lm_boxcox$x[which.max(falls.lm_boxcox$y)]
+
+falls.lm_bc <- lm((number.of.falls^lambda - 1) / lambda ~ ., data = falls)
+
+par(mfrow=c(2,2))
+plot(falls.lm_bc)
+title("Figure 8", side = 1, line = -9, at = 0, cex = 0.8, col = "black")
+
+```
+
+As seen in figure 7 our log transformation does NOT make this any better. In fact the normality seems worse. The lower quantile standardized residuals are way off from the line. In figure 8 we see that the box-cox transformation does make it better but we are still seeing an issue in those lower quantiles.
+
+<br>
+We will continue on with the linear model anyways to show our abillities in building a model.
+<br>
+
+We will now test all two way interactions.
+
+```{R, warning=FALSE, echo=FALSE}
+fit <- lm( number.of.falls ~ .^2, data=falls )
+
+summary(fit)
+print("Figure 9")
+```
+
+In figure 9 the interaction variable that stands out is intervention:balance.index with a p value of 0.0159. We will continue on with this variable.
+
+```{R, warning=FALSE, echo=FALSE}
+falls.lm1 <- lm( number.of.falls ~ .+intervention:balance.index, data=falls )
+
+summary(falls.lm1)
+print("Figure 10")
+```
+
+In figure 10 we can see that our model is very significant but we can see that sex and intervention are not significant. 0 is within their standard errors as well.
+
+```{R, warning=FALSE, echo=FALSE}
+falls.lm2 <- lm( number.of.falls ~ balance.index+strength.index+intervention:balance.index, data=falls )
+
+summary(falls.lm2)
+print("Figure 11")
+
+par(mfrow=c(2,2))
+plot(falls.lm2)
+title("Figure 12", side = 1, line = -9, at = 0, cex = 0.8, col = "black")
+
+```
+As seen in figure 11 after remove sex and intervention we arrive at a higher adj r^2 value and all coefficients are significant. In figure 12 we can see that just as at the start we have normality problems still. Since they look the exact same as they did at the start let's see if a box cox can make them less bad like last time.
+
+
+```{R, warning=FALSE, echo=FALSE}
+falls.lm_boxcox2 <- boxcox(lm(number.of.falls + 0.00001 ~ balance.index+strength.index+intervention:balance.index, data = falls))
+
+lambda <- falls.lm_boxcox2$x[which.max(falls.lm_boxcox2$y)]
+
+falls.lm_bc <- lm((number.of.falls^lambda - 1) / lambda ~ balance.index+strength.index+intervention:balance.index, data = falls)
+
+summary(falls.lm_bc)
+print("Figure 13")
+
+par(mfrow=c(2,2))
+plot(falls.lm_bc)
+title("Figure 14", side = 1, line = -9, at = 0, cex = 0.8, col = "black")
+
+```
+In figure 14 we can see that our normality has gotten better but it still is not good enough to pass.
+
+
+```{R, warning=FALSE, echo=FALSE}
+falls.lm_boxcox2 <- boxcox(lm(number.of.falls + 0.00001 ~ strength.index+intervention:balance.index, data = falls))
+
+lambda <- falls.lm_boxcox2$x[which.max(falls.lm_boxcox2$y)]
+
+falls.lm_bc <- lm((number.of.falls^lambda - 1) / lambda ~ strength.index+intervention:balance.index, data = falls)
+
+summary(falls.lm_bc)
+print("Figure 15")
+
+par(mfrow=c(2,2))
+plot(falls.lm_bc)
+title("Figure 16", side = 1, line = -9, at = 0, cex = 0.8, col = "black")
+```
+In figure 15 we removed balance.index and the normallity as seen in figure 16 is now passable. The model only shows a low correlation, but it does show significants. 
+
+The geometric mean of a persons number of falls is 0.596775.
+<br>
+
+For a one-unit increase in the strength.index, the increase in the transformed number of falls is 0.018409.
+<br>
+
+When a patient has has intervention a one-unit increase in balance.index will result in an decrease in the  transformed number of falls by -0.030387.
+
+
+##Poisson Time!
+
+Let's look at all interaction variables in the poisson regression
+```{R, warning=FALSE, echo=FALSE}
+falls.pm1 <- glm(number.of.falls ~ .^2,
+                      family = "poisson", data = falls)
+
+summary(falls.pm1)
+print("Figure 17")
+```
+As seen in figure 17 the best interaction variable is intervention:balance.index due to it's low p value.
+
+```{R, warning=FALSE, echo=FALSE}
+falls.pm2 <- glm(number.of.falls ~ . + balance.index:intervention,
+                      family = "poisson", data = falls)
+
+summary(falls.pm2)
+print("Figure 18")
+```
+
+As we can see in figure 18 the model using all predictors plus the interaction of intervention and balance index has a lower AIC than our all interactions model and mostly significant variables. Sex seems to stand out as 0 being with the bounds of it's standard error though. I will remove it.
+
+```{R, warning=FALSE, echo=FALSE}
+falls.pm3 <- glm(number.of.falls ~ balance.index + strength.index + intervention + balance.index:intervention,
+                      family = "poisson", data = falls)
+
+summary(falls.pm3)
+print("Figure 19")
+```
+As seen in figure 19 our AIC has decreased with this change (Yay!) now let's test if this model is truly better with a vuong test.
+
+```{R, warning=FALSE, echo=FALSE}
+vuong(falls.pm3, falls.pm2)
+print("Figure 20")
+```
+
+In figure 20 two out of the three statistics show that the newer model without sex is signifcantly better than the older one with sex. Now lets check out our model's statistics
+
+```{R, warning=FALSE, echo=FALSE}
+library(car)
+
+predicted_values <- predict(falls.pm3, type = "response", se.fit = TRUE)$fit
+
+plot(log(predicted_values), residuals(falls.pm3, type = "deviance"),
+     xlab = "Log(Predicted values)", ylab = "Deviance Residuals",
+     main = "Linearity Check: Observed vs Predicted (on log scale)")
+mtext("Figure 21", side = 1, line = 3, at = 0.5, cex = 0.8, col = "black")
+
+abline(h = 0, col = "red", lty = 2)
+
+residual_deviance <- residuals(falls.pm3, type = "deviance")
+observed_deviance <- sum(residual_deviance^2)
+
+df <- df.residual(falls.pm3)
+AIC_value <- AIC(falls.pm3)
+
+overdispersion_ratio <- observed_deviance / df
+
+cat("Residual deviance:", observed_deviance, "\n")
+cat("Degrees of freedom:", df, "\n")
+cat("AIC value:", AIC_value, "\n")
+cat("Overdispersion ratio:", overdispersion_ratio, "\n")
+print("Figure 22")
+
+```
+We can see in figure 22 that we do not suffer from over dispersion as our over dispersion ratio is around 1. We can see however that out last assumtion of linearity is questionable in figure 21.
+
+```{R, warning=FALSE, echo=FALSE}
+
+coefficients <- coef(falls.pm3)
+
+exp_coefficients <- exp(coefficients)
+
+print(exp_coefficients)
+print("Figure 22")
+```
+
+For a one-unit increase in the balance.index, the expected count of falls is multiplied by 1.01, assuming all other variables are constant.
+<br>
+For a one-unit increase in the strength.index, the expected count of falls is multiplied by 1.009, assuming all other variables are constant.
+<br>
+Holding other variables constant, the expected count of falls for individuals with the intervention is 0.53 times the expected count for those without the intervention.
+<br>
+For a one-unit increase in balance.index for individuals with the intervention, the expected count of falls is multiplied by 0.992 compared to individuals without the intervention
+
+
+```{R, warning=FALSE, echo=FALSE}
+linear_predictions <- predict(falls.lm_bc, newdata = falls)
+poisson_predictions <- predict(falls.pm3, newdata = falls)
+
+mse_linear <- mean((falls$number.of.falls - linear_predictions)^2)
+mse_poisson <- mean((falls$number.of.falls - poisson_predictions)^2)
+
+cat("MSE Linear Model:", mse_linear, "\n")
+cat("MSE Poisson Model:", mse_poisson, "\n")
+print("Figure 23")
+```
+
+I can't do an LR test on the two since they are not nested so I decided to try a MSE (Figure 23) but both models seem to have about the exact same MSE with the poisson model having a slightly lower MSE, but the poisson model passing it's linearity assumption is questionable. Therefor I would go with the linear model as it does pass all it's assumptions.
