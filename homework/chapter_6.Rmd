@@ -1,0 +1,461 @@
+```{R}
+library(gridExtra)  
+library(mnormt) 
+library(lme4) 
+library(knitr) 
+library(pander)
+library(tidyverse)
+```
+
+## Question Guided 4
+
+Birdkeeping and lung cancer: a retrospective observational study. A 1972-1981 health survey in The Hague, Netherlands, discovered an association between keeping pet birds and increased risk of lung cancer. To investigate birdkeeping as a risk factor, researchers conducted a case-control study of patients in 1985 at four hospitals in The Hague. They identified 49 cases of lung cancer among patients who were registered with a general practice, who were age 65 or younger, and who had resided in the city since 1965. Each patient (case) with cancer was matched with two control subjects (without cancer) by age and sex. Further details can be found in Holst, Kromhout, and Brand (1988).
+
+Age, sex, and smoking history are all known to be associated with lung cancer incidence. Thus, researchers wished to determine after age, sex, socioeconomic status, and smoking have been controlled for, is an additional risk associated with birdkeeping? The birds (Ramsey and Schafer 2002) is found in birdkeeping.csv, and the variables are listed below. In addition, R code at the end of the problem can be used to input the birds and create additional useful variables.
+
+- `female` = sex (1 = Female, 0 = Male)
+    - `age` = age, in years
+    - `highstatus` = socioeconomic status (1 = High, 0 = Low), determined by the occupation of the household’s primary wage earner
+    - `yrsmoke` = years of smoking prior to diagnosis or examination
+    - `cigsday` = average rate of smoking, in cigarettes per day
+    - `bird` = indicator of birdkeeping (1 = Yes, 0 = No), determined by whether or not there were caged birds in the home for more than 6 consecutive months from 5 to 14 years before diagnosis (cases) or examination (controls)
+    - `cancer` = indicator of lung cancer diagnosis (1 = Cancer, 0 = No Cancer)
+
+    a. Perform an exploratory data analysis to see how each explanatory variable is related to the response (`cancer`).  Summarize each relationship in one sentence.
+
+      - For quantitative explanatory variables (`age`, `yrsmoke`, `cigsday`), produce a cdplot, a boxplot, and summary statistics by cancer diagnosis.
+
+      - For categorical explanatory variables (`female` or `sex`, `highstatus` or `socioecon_status`, `bird`), produce a segmented bar chart and an appropriate table of proportions showing the relationship with cancer diagnosis.
+
+
+```{R}
+birds <- read.csv("data/birdkeeping.csv")
+
+birds$female <- factor(birds$female, levels = c(0, 1), labels = c("Male", "Female"))
+birds$highstatus <- factor(birds$highstatus, levels = c(0, 1), labels = c("Low", "High"))
+birds$bird <- factor(birds$bird, levels = c(0, 1), labels = c("No", "Yes"))
+birds$cancer <- factor(birds$cancer, levels = c(0, 1), labels = c("No Cancer", "Cancer"))
+
+
+cdplot(birds$age, birds$cancer, main = "CD Plot of Age by Cancer Diagnosis", xlab = "Age", ylab = "Probability of Cancer")
+
+
+boxplot(age ~ cancer, data = birds, main = "Boxplot of Age by Cancer Diagnosis", xlab = "Cancer Diagnosis", ylab = "Age")
+
+summary_age <- summary(birds$age)
+cat("Summary Statistics for Age by Cancer Diagnosis:\n", summary_age, "\n\n")
+
+cdplot(birds$yrsmoke, birds$cancer, main = "CD Plot of Years of Smoking by Cancer Diagnosis", xlab = "Years of Smoking", ylab = "Probability of Cancer")
+
+
+boxplot(yrsmoke ~ cancer, data = birds, main = "Boxplot of Years of Smoking by Cancer Diagnosis", xlab = "Cancer Diagnosis", ylab = "Years of Smoking")
+
+summary_yrsmoke <- summary(birds$yrsmoke)
+cat("Summary Statistics for Years of Smoking by Cancer Diagnosis:\n", summary_yrsmoke, "\n\n")
+
+
+cdplot(birds$cigsday, birds$cancer, main = "CD Plot of Cigarettes per Day by Cancer Diagnosis", xlab = "Cigarettes per Day", ylab = "Probability of Cancer")
+
+
+boxplot(cigsday ~ cancer, data = birds, main = "Boxplot of Cigarettes per Day by Cancer Diagnosis", xlab = "Cancer Diagnosis", ylab = "Cigarettes per Day")
+
+summary_cigsday <- summary(birds$cigsday)
+cat("Summary Statistics for Cigarettes per Day by Cancer Diagnosis:\n", summary_cigsday, "\n\n")
+
+ggplot(birds, aes(x = cancer, fill = female)) +
+  geom_bar(position = "fill") +
+  labs(title = "Segmented Bar Chart of Gender by Cancer Diagnosis", x = "Cancer Diagnosis", y = "Proportion") +
+  scale_fill_manual(values = c("Male" = "lightblue", "Female" = "pink"))
+
+table_gender <- table(birds$female, birds$cancer)
+prop.table(table_gender, margin = 2)
+
+ggplot(birds, aes(x = cancer, fill = highstatus)) +
+  geom_bar(position = "fill") +
+  labs(title = "Segmented Bar Chart of Socioeconomic Status by Cancer Diagnosis", x = "Cancer Diagnosis", y = "Proportion") +
+  scale_fill_manual(values = c("Low" = "lightgreen", "High" = "darkgreen"))
+
+table_status <- table(birds$highstatus, birds$cancer)
+prop.table(table_status, margin = 2)
+
+ggplot(birds, aes(x = cancer, fill = bird)) +
+  geom_bar(position = "fill") +
+  labs(title = "Segmented Bar Chart of Birdkeeping by Cancer Diagnosis", x = "Cancer Diagnosis", y = "Proportion") +
+  scale_fill_manual(values = c("No" = "lightcoral", "Yes" = "darkred"))
+
+table_bird <- table(birds$bird, birds$cancer)
+prop.table(table_bird, margin = 2)
+```
+
+Probability of cancer does not seem much effected by age as can be seen in the cdplot and how the boxplots are identical.
+
+Those with cancer tend to have many more years smoking according to the cdplot and the blox plot for years smoking and cancer. More years of smoking increases probability of cancer.
+
+Cigs per day increase probability per day upto around 15 then plateau. There is also a noticeable dip at 35 and after 40. Almost all of those with cancer had between 10 and 25 cigs per day.
+
+Gender seems to have no effect on cancer.
+
+Those in a lower socicio economic status have a higher proportion of cancer.
+
+Those with a bird have a much higher proportion of having cancer.
+
+
+    b. In (a), you should have found no relationship between whether or not a patient develops lung cancer and either their age or sex.  Why might this be?  What implications will this have on your modeling?
+
+
+This means that we should not use age or sex as predictors. This would be the case if age and sex have no predictive value.
+
+    c. Based on a two-way table with keeping birds and developing lung cancer from (a), find an unadjusted odds ratio comparing birdkeepers to non-birdkeepers and interpret this odds ratio in context.  (Note: an *unadjusted* odds ratio is found by *not* controlling for any other variables.)  Also, find an analogous relative risk and interpret it in context as well.
+
+To calculate the unadjusted odds ratio and the analogous relative risk, we can use the two-way table you provided:
+
+```
+              No Cancer    Cancer
+  No Bird      0.6530612  0.3265306
+  Bird         0.3469388  0.6734694
+```
+
+Let's denote the four cells in the table as follows:
+
+- \(a\): Number of birdkeepers without lung cancer
+- \(b\): Number of non-birdkeepers without lung cancer
+- \(c\): Number of birdkeepers with lung cancer
+- \(d\): Number of non-birdkeepers with lung cancer
+
+The unadjusted odds ratio (OR) is calculated as:
+
+\[ OR = \frac{ad}{bc} \]
+
+And the analogous relative risk (RR) is calculated as:
+
+\[ RR = \frac{(a / (a + b))}{(c / (c + d))} \]
+
+Let's calculate these values:
+
+```{R}
+a <- 0.6734694
+b <- 0.3265306
+c <- 0.3469388
+d <- 0.6530612
+
+unadjusted_or <- (a * d) / (b * c)
+
+analogous_rr <- (a / (a + b)) / (c / (c + d))
+
+cat("Unadjusted Odds Ratio:", unadjusted_or, "\n")
+cat("Analogous Relative Risk:", analogous_rr, "\n")
+```
+
+Interpretation:
+
+- Unadjusted Odds Ratio (OR): Without accounting for other factors, the odds of developing lung cancer are approximately 3.88 times higher for individuals who keep birds compared to those who do not keep birds.
+- Analogous Relative Risk (RR): Without accounting for other factors, birdkeepers have a risk of developing lung cancer that is about 1.94 times higher than the risk for non-birdkeepers.
+
+    d. Are the elogits reasonably linear relating number of years smoked to the estimated log odds of developing lung cancer?  Demonstrate with an appropriate plot.
+
+
+```{R}
+
+logit_model <- glm(cancer ~ yrsmoke, data = birds, family = "binomial")
+
+ggplot(birds, aes(x = yrsmoke, y = log(predict(logit_model)), color = cancer)) +
+  geom_point() +
+  geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE) +
+  labs(title = "Logit Plot of Years Smoked vs. Log Odds of Lung Cancer", x = "Years of Smoking", y = "Log Odds of Lung Cancer", color = "Cancer Diagnosis") +
+  theme_minimal()
+
+
+```
+
+This does not look like a linear relationship. There is most certianly a curve.
+
+    e. Does there appear to be an interaction between number of years smoked and whether the subject keeps a bird?  Demonstrate with an interaction plot and a coded scatterplot with empirical logits on the y-axis.
+
+```{R}
+
+library(emmeans)
+
+logit_model <- glm(cancer ~ yrsmoke * bird, data = birds, family = "binomial")
+
+predict_data <- expand.grid(yrsmoke = seq(min(birds$yrsmoke), max(birds$yrsmoke), length.out = 100),
+                            bird = levels(birds$bird))
+
+predict_data$predicted_prob <- predict(logit_model, newdata = predict_data, type = "response")
+
+predict_data$empirical_logit <- log(predict_data$predicted_prob / (1 - predict_data$predicted_prob))
+
+ggplot(predict_data, aes(x = yrsmoke, y = predicted_prob, color = bird)) +
+  geom_line(aes(group = bird)) +
+  labs(title = "Interaction Plot of Years of Smoking and Birdkeeping on Probability of Cancer",
+       x = "Years of Smoking", y = "Probability of Cancer", color = "Birdkeeping") +
+  theme_minimal()
+
+ggplot(predict_data, aes(x = yrsmoke, y = empirical_logit, color = bird)) +
+  geom_point() +
+  geom_line(aes(group = bird)) +
+  labs(title = "Coded Scatterplot with Empirical Logits",
+       x = "Years of Smoking", y = "Empirical Log Odds of Cancer", color = "Birdkeeping") +
+  theme_minimal()
+
+```
+
+No there doesn't seem to be any relationship having a bird just seems to add 1 more elogit odd. There seems to be an evan distribution of years smoked for both groups as well.
+
+
+
+ Before answering the next questions, fit logistic regression models in R with `cancer` as the response and the following sets of explanatory variables:
+
+      - `model1` = `age`, `yrsmoke`, `cigsday`, `female`, `highstatus`, `bird`
+      - `model2` = `yrsmoke`, `cigsday`, `highstatus`, `bird` 
+      - `model4` = `yrsmoke`, `bird`
+      - `model5` = the complete second order version of `model4` (add squared terms and an interaction)
+      - `model6` = `yrsmoke`, `bird`, `yrsmoke:bird`
+
+
+```{R}
+model1 <- glm(cancer ~ age + yrsmoke + cigsday + female + highstatus + bird, data = birds, family = "binomial")
+model2 <- glm(cancer ~ yrsmoke + cigsday + highstatus + bird, data = birds, family = "binomial")
+model4 <- glm(cancer ~ yrsmoke + bird, data = birds, family = "binomial")
+model5 <- glm(cancer ~ yrsmoke + bird + yrsmoke*yrsmoke + bird*bird + yrsmoke:bird, data = birds, family = "binomial")
+model6 <- glm(cancer ~ yrsmoke + bird + yrsmoke:bird, data = birds, family = "binomial")
+```
+
+
+    f. Is there evidence that we can remove `age` and `female` from our model?  Perform an appropriate test comparing `model1` to `model2`; give a test statistic and p-value, and state a conclusion in context.
+
+
+```{R}
+library(lmtest)
+
+lr_test <- lrtest(model1, model2)
+
+summary(lr_test)
+```
+
+With a p-value of 0.2828, which is greater than the conventional significance level of 0.05, we fail to reject the null hypothesis. Therefore, there is insufficient evidence to suggest that age and female significantly improve the model fit.
+
+ Is there evidence that the complete second order version of `model4` improves its performance?  Perform an appropriate test comparing `model4` to `model5`; give a test statistic and p-value, and state a conclusion in context.
+```{R}
+lr_test <- lrtest(model4, model5)
+
+summary(lr_test)
+```
+With a p-value of 0.7851, which is greater than the conventional significance level of 0.05, we fail to reject the null hypothesis. Therefore, there is insufficient evidence to suggest that second order model significantly improves the models fit.
+
+
+    h. Carefully interpret each of the four model coefficients in `model6` in context.
+    
+```{R}
+exp_coefs <- exp(coef(model6))
+print(exp_coefs)
+```
+
+Intercept: When all other variables are held constant (assuming bird is set to "No"), the odds of developing lung cancer decrease by approximately 95.01%
+
+yrsmoke:  When all other variables are held constant for each additional year of smoking, the odds of developing lung cancer increase by approximately 5.42%.
+
+Bird: Holding other variables constant, individuals who keep birds have approximately 3.25 times higher odds of developing lung cancer compared to those who do not keep birds.
+
+Interaction: For each additional year of smoking, the odds of lung cancer increase by an additional 0.93% for individuals who keep birds compared to those who do not.
+
+
+    i. If you replaced `yrsmoke` everywhere it appears in `model6` with a mean-centered version of `yrsmoke`, tell what would change among these elements: the 4 coefficients, the 4 p-values for coefficients, and the residual deviance.
+
+
+```{R}
+yrsmoke_mean <- mean(birds$yrsmoke)
+birds$yrsmoke_centered <- birds$yrsmoke - yrsmoke_mean
+
+modified_model6 <- glm(cancer ~ yrsmoke_centered + bird + yrsmoke_centered:bird, data = birds, family = "binomial")
+
+coefficients_before <- coef(model6)
+coefficients_after <- coef(modified_model6)
+
+p_values_before <- summary(model6)$coefficients[, 4]
+p_values_after <- summary(modified_model6)$coefficients[, 4]
+
+residual_deviance_before <- deviance(model6)
+residual_deviance_after <- deviance(modified_model6)
+
+cat("Coefficients Before:\n", coefficients_before, "\n\n")
+cat("Coefficients After:\n", coefficients_after, "\n\n")
+
+cat("P-values Before:\n", p_values_before, "\n\n")
+cat("P-values After:\n", p_values_after, "\n\n")
+
+cat("Residual Deviance Before:", residual_deviance_before, "\n")
+cat("Residual Deviance After:", residual_deviance_after, "\n")
+
+```
+    j. `model4` is a potential final model based on this set of explanatory variables.  Find and carefully interpret 95% confidence intervals based on profile likelihoods for the coefficients of `yrsmoke` and `bird`. 
+
+
+```{R}
+model4 <- glm(cancer ~ yrsmoke + bird, data = birds, family = "binomial")
+
+conf_intervals <- confint(model4, level = 0.95)
+
+conf_intervals_yrsmoke <- confint(model4)[2, ]
+conf_intervals_bird <- confint(model4)[3, ]
+
+
+cat("95% Confidence Interval for yrsmoke:", conf_intervals_yrsmoke, "\n")
+cat("95% Confidence Interval for bird:", conf_intervals_bird, "\n")
+
+```
+Yrsmoke: <br>
+This interval suggests that we can be 95% confident that the true effect of yrsmoke on the log odds of developing lung cancer is between 0.0272 and 0.0937. 
+
+
+<br>
+bird: <br>
+This interval suggests that we can be 95% confident that the true effect of bird on the log odds of developing lung cancer is between 0.7182 and 2.2771. 
+
+
+
+
+
+
+    k. How does the adjusted odds ratio for birdkeeping from `model4` compare with the unadjusted odds ratio you found in (c)?  Is birdkeeping associated with a significant increase in the odds of developing lung cancer, even after adjusting for other factors?
+
+
+```{R}
+unadjusted_or <- 3.882353
+
+summary_model4 <- summary(model4)
+adjusted_or_model4 <- exp(summary_model4$coefficients[2, "Estimate"])
+
+cat("Unadjusted Odds Ratio from (c):", unadjusted_or, "\n")
+cat("Adjusted Odds Ratio from model4:", adjusted_or_model4, "\n")
+
+```
+
+The adjusted OR is much smaller. <br>
+
+This suggests that, when accounting for the number of years smoked, the association between birdkeeping and the odds of developing lung cancer becomes much weaker.
+
+    l. Use the categorical variable `years_factor` based on `yrsmoke` and replace `yrsmoke` in `model4` with your new variable to create `model4a`.  First, interpret the coefficient for `years_factorOver 25 years` in context.  Then tell if you prefer `model4` with years smoked as a numeric predictor or `model4a` with years smoked as a categorical predictor, and explain your reasoning.
+
+
+```{R}
+birds$years_factor <- cut(birds$yrsmoke, breaks = c(0, 10, 15, 20, 25, max(birds$yrsmoke)), labels = c("0-10 years", "11-15 years", "16-20 years", "21-25 years", "Over 25 years"), include.lowest = TRUE)
+
+model4a <- glm(cancer ~ years_factor + bird, data = birds, family = "binomial")
+
+summary(model4)
+summary(model4a)
+
+lr_test <- lrtest(model4, model4a)
+
+summary(lr_test)
+
+exp_coefs <- exp(coef(model4a))
+print(exp_coefs)
+```
+All other variables held constant, for individuals with over 25 years of smoking, the odds of developing lung cancer are estimated to increase by 866%
+
+The AIC of the quantitative year is lower. The p value of the LR test was .49 shows that we cannot reject the null hypothesis that the factored years are a significant improvement on the model. I would want to go with quantitative years as less information is lost without the binning.
+
+    m. Discuss the scope of inference in this study.  Can we generalize our findings beyond the subjects in this study?  Can we conclude that birdkeeping causes increased odds of developing lung cancer?  Do you have other concerns with this study design or the analysis you carried out?
+
+
+Generalizing the findings beyond this specific population may not be appropriate, as the study may not be representative of other populations with different demographics as this was from a study from 1972-1981 in the Netherlands.
+
+While the study may identify correlations between birdkeeping and lung cancer, establishing causation requires careful consideration of potential confounding factors and alternative explanations.
+
+I don't have any issues with the analysis carried out other than we only used logistic regression.
+
+
+## Open Ended 3
+
+3. __NBA data.__  Data in `NBA1718team.csv` [@rossotti] looks at factors that are associated with a professional basketball team's winning percentage in the 2017-18 season. After thorough exploratory data analyses, create the best model you can to predict a team's winning percentage; be careful of collinearity between the covariates. Based on your EDA and modeling, describe the factors that seem to explain a team's success.
+
+    - `win_pct` = Percentage of Wins,
+    - `FT_pct` = Average Free Throw Percentage per game,
+    - `TOV` = Average Turnovers per game, 
+    - `FGA` = Average Field Goal Attempts per game,
+    - `FG` = Average Field Goals Made per game,
+    - `attempts_3P` = Average 3 Point Attempts per game,
+    - `avg_3P_pct` = Average 3 Point Percentage per game,
+    - `PTS` = Average Points per game,
+    - `OREB` = Average Offensive Rebounds per game,
+    - `DREB` = Average Defensive Rebounds per game,
+    - `REB` = Average Total Rebounds per game,
+    - `AST` = Average Assists per game,
+    - `STL` = Average Steals per game,
+    - `BLK` = Average Blocks per game,
+    - `PF` = Average Fouls per game,
+    - `attempts_2P` = Average 2 Point Attempts per game
+    
+    
+```{R}
+eda_quantitative <- function(data, explanatory_var, response_var) {
+ggplot(data, aes(x=data[[explanatory_var]], y=data[[response_var]])) + 
+  geom_point(size = 2.5) +
+  ylab(response_var) +
+  xlab(explanatory_var)
+}
+```
+
+
+```{R}
+
+nba <- read.csv("data/NBA1718team.csv")
+
+nba <- nba %>% mutate(log_win_pct = log(win_pct))
+
+head(nba)
+
+eda_quantitative(nba, "FT_pct", "log_win_pct")
+eda_quantitative(nba, "TOV", "log_win_pct")
+eda_quantitative(nba, "FGA", "log_win_pct")
+eda_quantitative(nba, "FG", "log_win_pct")
+eda_quantitative(nba, "attempts_3P", "log_win_pct")
+eda_quantitative(nba, "avg_3P_pct", "log_win_pct")
+eda_quantitative(nba, "PTS", "log_win_pct")
+eda_quantitative(nba, "OREB", "log_win_pct")
+eda_quantitative(nba, "DREB", "log_win_pct")
+eda_quantitative(nba, "REB", "log_win_pct")
+eda_quantitative(nba, "AST", "log_win_pct")
+eda_quantitative(nba, "STL", "log_win_pct")
+eda_quantitative(nba, "BLK", "log_win_pct")
+eda_quantitative(nba, "PF", "log_win_pct")
+eda_quantitative(nba, "attempts_2P", "log_win_pct")
+
+summary(nba)
+
+```
+```{R}
+library(corrplot)
+
+nba <- subset(nba, select = -c(1))
+
+cor_plot = cor(nba)
+
+corrplot(cor_plot, method = 'number', type = 'upper')
+```
+
+```{R}
+nba.model0 <- glm(win_pct ~ FG, family = binomial, data = nba)
+nba.model1 <- glm(win_pct ~ FG + PTS, family = binomial, data = nba)
+nba.model2 <- glm(win_pct ~ FG + PTS + BLK, family = binomial, data = nba)
+nba.model3 <- glm(win_pct ~ FG + PTS + BLK + avg_3P_pct, family = binomial, data = nba)
+
+```
+
+
+```{R}
+drop_in_dev0 <- anova(nba.model0, nba.model1, test = "Chisq")
+drop_in_dev1 <- anova(nba.model1, nba.model2, test = "Chisq")
+drop_in_dev2 <- anova(nba.model2, nba.model3, test = "Chisq")
+drop_in_dev3 <- anova(nba.model0, nba.model3, test = "Chisq")
+
+print(drop_in_dev0)
+print(drop_in_dev1)
+print(drop_in_dev2)
+print(drop_in_dev3)
+
+
+
+```
+
