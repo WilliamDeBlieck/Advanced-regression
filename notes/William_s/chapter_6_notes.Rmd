@@ -1,0 +1,110 @@
+
+
+Finds the logistic model with 1 way and an alt method
+```{R}
+model.HaleD <- glm(cbind(YesVotes, NumVotes - YesVotes) ~
+    distance, family = binomial, data = rrHale.df)
+# alternative expression
+model.HaleD.alt <- glm(YesVotes / NumVotes ~ distance, 
+    weights = NumVotes, family = binomial, data = rrHale.df)
+```
+
+
+Adds new predictor
+```{R}
+model.HaleBD <- glm(cbind(YesVotes, NumVotes - YesVotes) ~
+  distance + pctBlack, family = binomial, data = rrHale.df)
+```
+
+
+drop dev test to check two models
+```{R}
+drop_in_dev <- anova(model.HaleD, model.HaleBD, test = "Chisq")
+```
+
+
+Expoentiates the CIs
+```{R}
+exp(confint(model.HaleBD))
+```
+
+
+GOF test
+```{R}
+1-pchisq(307.2173, 8) 
+```
+
+
+
+New log reg with interaction
+```{R}
+model.HaleBxD <- glm(cbind(YesVotes, NumVotes - YesVotes) ~
+  distance + pctBlack + distance:pctBlack, 
+  family = binomial, data = rrHale.df)
+```
+
+
+Drop in dev to test two models against eachother
+```{R}
+drop_in_dev <- anova(model.HaleBD, model.HaleBxD, 
+                     test = "Chisq")
+````
+
+
+
+Makes a quasibinomial with same predictors as last
+```{R}
+model.HaleBxDq <- glm(cbind(YesVotes, NumVotes - YesVotes) ~
+  distance + pctBlack + distance:pctBlack, 
+  family = quasibinomial, data = rrHale.df)
+```
+
+
+
+Makes quasi model with less predictor
+```{R}
+model.HaleBDq <- glm(cbind(YesVotes, NumVotes - YesVotes) ~
+  distance + pctBlack, 
+  family = quasibinomial, data = rrHale.df)
+```
+
+
+Makes new bimodial
+```{R}
+model1 <- glm(lose.wt.01 ~ female, family = binomial, 
+              data = risk2009)
+```
+
+
+adds new predictor
+```{R}
+model2 <- glm(lose.wt.01 ~ female + bmipct, 
+              family = binomial, data = risk2009)
+```
+
+adds new predictor
+```{R}
+model3 <- glm(lose.wt.01 ~ female + bmipct + sport, 
+              family = binomial, data = risk2009)
+```
+
+adds new interaction predictor
+```{R}
+model3int <- glm(lose.wt.01 ~ female + bmipct + sport +
+              female:sport + bmipct:sport, 
+              family = binomial, data = risk2009)
+```
+
+removes interaction
+```{R}
+model4 <- glm(lose.wt.01 ~ female + bmipct + media, 
+              family = binomial, data = risk2009)
+```
+
+Tests a bunch of models against each other
+```{R}
+drop_in_dev <- anova(model1, model2, model3, model4,
+                     test="Chisq")
+```
+
+

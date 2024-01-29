@@ -346,7 +346,7 @@ summary(crime.model1)
 
 ```
 
-total students, all sat and act predictors, and tuition.
+total students, all sat and act predictors, and tuition. We would only want to use total for sat or act.
     b. Consider a model with 4 predictors:  `act.comp + tuition + pct.male + total`.  Try fitting a linear regression with `burg09` as the response. Are there any concerns with this linear regression model?
 ```{R}
 
@@ -358,7 +358,7 @@ par(mfrow=c(2,2))
 plot(model)
 
 ```
-We have some normallity and linearity issues as seen in normal qq and res vs fit
+We have some normallity and linearity issues as seen in normal qq and res vs fit. The model is also not significant.
 
 
     c. Run a Poisson regression model with the 4 predictors from (b).  Interpret the coefficients for `tuition` and `pct.male`.
@@ -391,7 +391,15 @@ summary(poisson_model_new)
 
 ```
 
-For a one-unit increase in tuition, the expected log-count of burglaries decreases by approximately 0.03896, holding other predictors constant.
+```{R}
+coefficients <- coef(poisson_model_new)
+
+exp_coefficients <- exp(coefficients)
+
+print(exp_coefficients)
+```
+
+For a one-unit increase in tuition, the expected number of burglaries should be multiplied by 0.9617, holding other predictors constant.
 
     e. We will consider the possibility of including the total number of students at a university as an offset.  
         i. Explain why we might consider `total` as an offset.
@@ -433,15 +441,44 @@ crime <- mutate(crime, total.thous = total/1000)
             data = crime)
 summary(fit3)
 ```
-For a one-unit increase in tuition in thousands, while holding other variables constant, the log-count of burglaries is expected to increase by 0.145144. 
+
+```{R}
+coefficients <- coef(fit3)
+
+exp_coefficients <- exp(coefficients)
+
+print(exp_coefficients)
+```
+
+```{R}
+
+df_interaction <- expand.grid(
+  total.thous = seq(min(crime$total.thous), max(crime$total.thous), length.out = 3),
+  act.comp = seq(min(crime$act.comp), max(crime$act.comp), length.out = 3),
+  tuition.thous = mean(crime$tuition.thous)
+)
+
+df_interaction$predicted <- predict(fit3, newdata = df_interaction, type = "response")
+
+
+ggplot(df_interaction, aes(x = total.thous, y = predicted, color = factor(act.comp))) +
+  geom_line() +
+  labs(title = "Interaction Plot",
+       x = "Total.thous",
+       y = "Predicted Response",
+       color = "Act.Comp")
+
+
+```
+For a one-unit increase in tuition in thousands, while holding other variables constant, the number of burglaries is expected to multiply by 1.1562058 . 
 
 <br>
 
-For a one-unit increase in act.comp and a one-unit increase in tuition in thousands, the log-count of burglaries is expected to decrease by 0.007247. 
+For a one-unit increase in act.comp and a one-unit increase in tuition in thousands, the number of burglaries is expected to multiply by 0.8737132. 
 
 <br>
 
-For a one-unit increase in act.comp and a one-unit increase in total in thousands, the log-count of burglaries is expected to increase by 0.009273.
+For the interaction between act comp and total.thous please see above graph
 
 
 6. __U.S. National Medical Expenditure Survey.__ The data set `NMES1988` in the `AER` package contains a sample of individuals over 65 who are covered by Medicare in order to assess the demand for health care through physician office visits, outpatient visits, ER visits, hospital stays, etc.  The data can be accessed by installing and loading the `AER` package and then running `data(NMES1988)`.  More background information and references about the `NMES1988` data can be found in help pages for the `AER` package.  
@@ -485,20 +522,29 @@ zip_model <- zeroinfl(visits ~ chronic + health + insurance | chronic + insuranc
 summary(zip_model)
 
 ```
-Holding other variables constant, each one-unit increase in the chronic variable is associated with a 11.87% increase in the expected count of physician office visits.
 
-Individuals with poor health are expected to have 32.47% more physician office visits, holding other variables constant.
-  
-Individuals with excellent health are expected to have 26.65% fewer physician office visits, holding other variables constant.
+```{R}
+coefficients <- coef(zip_model)
 
-Holding other variables constant, individuals with insurance are expected to have approximately 15.14% more physician office visits.
+exp_coefficients <- exp(coefficients)
 
-The log-odds of excess zeros (individuals not visiting a physician office) is reduced by approximately 0.37 when all other predictor variables are zero.
+print(exp_coefficients)
+```
+holding all other variables constant, individuals with a chronic condition have an expected count of doctor visits about 1.13 times higher compared to those without a chronic condition.
+<br>
 
-Holding other variables constant, each one-unit increase in the chronic variable is associated with a decrease in the log-odds of excess zeros by approximately 0.56.
+individuals reporting poor health compared to those reporting good health have an expected count of doctor visits about 1.34 times higher compared to those with a different health status, controlling for other variables.
+<br>
+individuals reporting excellent health compared to those reporting good health have an expected count of doctor visits about 0.74 times the count of individuals with a different health status, holding other factors constant
+<br>
+individuals with health insurance have an expected count of doctor visits about 1.16 times higher than those without insurance, controlling for other predictors.
 
-Holding other variables constant, individuals with insurance are associated with a decrease in the log-odds of excess zeros by approximately 0.88 compared to those without insurance.
- 
+###Zero-Inflation-logit
+
+individuals with a chronic condition have odds of not going to the doctor 0.57 times lower compared to those without a chronic condition, holding other variables constant.
+<br>
+individuals with health insurance have odds of not going to the doctor 0.41 times lower compared to those without insurance, controlling for other predictors.
+<br>
  
  
     c. Is there significant evidence that the ZIP model is an improvement over a simple Poisson regression model? 
@@ -538,8 +584,12 @@ airbnb <- read.csv("data/NYCairbnb.csv")
 
 
 airbnb$bin_days <- cut(airbnb$days, breaks = quantile(airbnb$days, probs = seq(0, 1, 0.1), na.rm = TRUE), labels = paste0("Bin ", 1:10))
-head(airbnb)
 
+
+
+airbnb$instant_bookable <- ifelse(airbnb$instant_bookable == 'f', 0, 1)
+
+head(airbnb)
 ```
 ```{R}
 summary(airbnb)
@@ -548,7 +598,8 @@ str(airbnb)
 sum(is.na(airbnb))
 
 ggplot(airbnb, aes(x = number_of_reviews)) +
-  geom_histogram(binwidth = 1, fill = "blue", color = "black", alpha = 0.7)
+  geom_histogram(binwidth = 1, fill = "blue", color = "black", alpha = 0.7) +
+  xlim(0, 50)
 
 ```
 
@@ -557,7 +608,8 @@ ggplot(airbnb, aes(x = number_of_reviews)) +
 ggplot(data = airbnb, aes(x = number_of_reviews)) +
   geom_histogram(binwidth = .25, color = "black", fill = "white") +
   facet_wrap(~bin_days) +
-  xlab("Number of Reviews")
+  xlab("Number of Reviews") +
+  xlim(0, 50)
 
 
 ```
@@ -600,16 +652,48 @@ ggplot(sumStats, aes(x = bin_days, y = logmntotal)) +
 
 ```{R}
 
+
 poisson_model <- glm(number_of_reviews ~ room_type + bathrooms + bedrooms + price + 
-                        review_scores_cleanliness + review_scores_location + 
-                        review_scores_value + instant_bookable + offset(log(days)),
-                      family = "poisson", data = airbnb)
+                     review_scores_cleanliness + review_scores_location + 
+                     review_scores_value + instant_bookable + days, 
+                    family = poisson, 
+                    data = airbnb)
+
+quasi_poisson_model <- glm(number_of_reviews ~ room_type + bathrooms + bedrooms + price + 
+                          review_scores_cleanliness + review_scores_location + 
+                          review_scores_value + instant_bookable + days, 
+                         family = quasipoisson, 
+                         data = airbnb)
+
+
 
 summary(poisson_model)
+summary(quasi_poisson_model)
 
 
-exp(coef(poisson_model))
+exp(coef(quasi_poisson_model))
 
 ```
 
-The p-values associated with each coefficient suggest the significance of each predictor variable. All predictors have extremely low p-values, indicating their statistical significance.
+Due to the overdispersion shown in the quasi poisson degrees of freedom we must go with the quasipoisson model. Vuong and AIC are not compareable between quasipoisson and poisson.
+<br>
+Holding other variables constant, the expected rate of reviews for a private room is approximately 0.9895 times that of an entire home/apartment. 
+<br>
+Holding other variables constant, the expected rate of reviews for a shared room is approximately 0.7817 times that of an entire home/apartment
+<br>
+Holding other variables constant, for each additional bathroom, the expected rate of reviews decreases by approximately 11.11%
+<br>
+Holding other variables constant, for each additional bedroom, the expected rate of reviews increases by approximately 7.69%
+<br>
+Holding other variables constant, the expected rate of reviews changes very little for a one-unit increase in price
+<br>
+Holding other variables constant, for each one-unit increase in  review scores cleanliness , the expected rate of reviews increase by 11%
+<br>
+Holding other variables constant, for each one-unit increase in review scores location , the expected rate of reviews decreases by 8%
+<br>
+Holding other variables constant, for each one-unit increase in review scores value, the expected rate of reviews decreases by 9%
+<br>
+holding other variables constant, accommodations that are instant bookable have an expected rate of reviews approximately 1.41 times higher than those that are not instant bookable.
+<br>
+Holding other variables constant, the expected rate of reviews increases very slightly by approximately 0.005% for each additional day.
+
