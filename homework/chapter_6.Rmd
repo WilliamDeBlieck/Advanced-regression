@@ -95,7 +95,7 @@ Cigs per day increase probability per day upto around 15 then plateau. There is 
 
 Gender seems to have no effect on cancer.
 
-Those in a lower socicio economic status have a higher proportion of cancer.
+Those in a lower socio economic status have a higher proportion of cancer.
 
 Those with a bird have a much higher proportion of having cancer.
 
@@ -128,7 +128,7 @@ The unadjusted odds ratio (OR) is calculated as:
 
 And the analogous relative risk (RR) is calculated as:
 
-\[ RR = \frac{(a / (a + b))}{(c / (c + d))} \]
+\[ RR = \frac{(c / (c + a))}{(d / (d + b))} \]
 
 Let's calculate these values:
 
@@ -140,7 +140,7 @@ d <- 0.6530612
 
 unadjusted_or <- (a * d) / (b * c)
 
-analogous_rr <- (a / (a + b)) / (c / (c + d))
+analogous_rr <- (34 / (34 + 64)) / (33 / (33 + 26))
 
 cat("Unadjusted Odds Ratio:", unadjusted_or, "\n")
 cat("Analogous Relative Risk:", analogous_rr, "\n")
@@ -149,7 +149,7 @@ cat("Analogous Relative Risk:", analogous_rr, "\n")
 Interpretation:
 
 - Unadjusted Odds Ratio (OR): Without accounting for other factors, the odds of developing lung cancer are approximately 3.88 times higher for individuals who keep birds compared to those who do not keep birds.
-- Analogous Relative Risk (RR): Without accounting for other factors, birdkeepers have a risk of developing lung cancer that is about 1.94 times higher than the risk for non-birdkeepers.
+- Analogous Relative Risk (RR): Without accounting for other factors, birdkeepers have a risk of developing lung cancer that is .62 the risk for non-birdkeepers.
 
     d. Are the elogits reasonably linear relating number of years smoked to the estimated log odds of developing lung cancer?  Demonstrate with an appropriate plot.
 
@@ -158,7 +158,7 @@ Interpretation:
 
 logit_model <- glm(cancer ~ yrsmoke, data = birds, family = "binomial")
 
-ggplot(birds, aes(x = yrsmoke, y = log(predict(logit_model)), color = cancer)) +
+ggplot(birds, aes(x = yrsmoke, y = log(predict(logit_model) + 0.00001), color = cancer)) +
   geom_point() +
   geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE) +
   labs(title = "Logit Plot of Years Smoked vs. Log Odds of Lung Cancer", x = "Years of Smoking", y = "Log Odds of Lung Cancer", color = "Cancer Diagnosis") +
@@ -250,11 +250,11 @@ exp_coefs <- exp(coef(model6))
 print(exp_coefs)
 ```
 
-Intercept: When all other variables are held constant (assuming bird is set to "No"), the odds of developing lung cancer decrease by approximately 95.01%
+Intercept: When bird is set to "No" and they have never smoked, the odds of developing lung cancer are 5%.
 
-yrsmoke:  When all other variables are held constant for each additional year of smoking, the odds of developing lung cancer increase by approximately 5.42%.
+yrsmoke:  When all other variables are held constant and bird is "No" for each additional year of smoking, the odds of developing lung cancer increase by approximately 5.42%.
 
-Bird: Holding other variables constant, individuals who keep birds have approximately 3.25 times higher odds of developing lung cancer compared to those who do not keep birds.
+Bird: Holding other variables constant and they have never smoked, individuals who keep birds have approximately 3.25 times higher odds of developing lung cancer compared to those who do not keep birds.
 
 Interaction: For each additional year of smoking, the odds of lung cancer increase by an additional 0.93% for individuals who keep birds compared to those who do not.
 
@@ -295,8 +295,8 @@ model4 <- glm(cancer ~ yrsmoke + bird, data = birds, family = "binomial")
 
 conf_intervals <- confint(model4, level = 0.95)
 
-conf_intervals_yrsmoke <- confint(model4)[2, ]
-conf_intervals_bird <- confint(model4)[3, ]
+conf_intervals_yrsmoke <- exp(confint(model4)[2, ])
+conf_intervals_bird <- exp(confint(model4)[3, ])
 
 
 cat("95% Confidence Interval for yrsmoke:", conf_intervals_yrsmoke, "\n")
@@ -304,12 +304,12 @@ cat("95% Confidence Interval for bird:", conf_intervals_bird, "\n")
 
 ```
 Yrsmoke: <br>
-This interval suggests that we can be 95% confident that the true effect of yrsmoke on the log odds of developing lung cancer is between 0.0272 and 0.0937. 
+This interval suggests that we can be 95% confident that the true effect of yrsmoke on the probability of developing cancer between an increase of 2.7% and 9.8%. 
 
 
 <br>
 bird: <br>
-This interval suggests that we can be 95% confident that the true effect of bird on the log odds of developing lung cancer is between 0.7182 and 2.2771. 
+This interval suggests that we can be 95% confident that the true effect of bird on the increase in the probability of developing lung cancer is between 205% and 974%. 
 
 
 
@@ -436,10 +436,10 @@ corrplot(cor_plot, method = 'number', type = 'upper')
 ```
 
 ```{R}
-nba.model0 <- glm(win_pct ~ FG, family = binomial, data = nba)
-nba.model1 <- glm(win_pct ~ FG + PTS, family = binomial, data = nba)
-nba.model2 <- glm(win_pct ~ FG + PTS + BLK, family = binomial, data = nba)
-nba.model3 <- glm(win_pct ~ FG + PTS + BLK + avg_3P_pct, family = binomial, data = nba)
+nba.model0 <- glm(win_pct ~ FG, family = binomial, data = nba, weight = (Win+Loss))
+nba.model1 <- glm(win_pct ~ FG + PTS, family = binomial, data = nba, weight = (Win+Loss))
+nba.model2 <- glm(win_pct ~ FG + PTS + BLK, family = binomial, data = nba, weight = (Win+Loss))
+nba.model3 <- glm(win_pct ~ FG + PTS + BLK + avg_3P_pct, family = binomial, data = nba, weight = (Win+Loss))
 
 ```
 
@@ -458,4 +458,48 @@ print(drop_in_dev3)
 
 
 ```
+
+We can see a significant chi val to show that the new model is better for every new predictor except for BLK.
+
+```{R}
+nba.model4 <- glm(win_pct ~ FG + PTS + avg_3P_pct, family = binomial, data = nba, weight = (Win+Loss))
+
+drop_in_dev4 <- anova(nba.model3, nba.model4, test = "Chisq")
+
+print(drop_in_dev4)
+```
+We see significant evidence that the model is better without BLK.
+
+
+```{R}
+residuals <- residuals(nba.model4, type = "response")
+
+pearson_residuals <- residuals / sqrt(1 / fitted(nba.model4) + 1 / (1 - fitted(nba.model4)))
+
+dispersion_statistic <- sum(pearson_residuals^2) / df.residual(nba.model4)
+
+print(dispersion_statistic)
+```
+
+No evidence of overdispersion in model.
+
+```{R}
+summary(nba.model4)
+
+# Extract p-values for each coefficient
+p_values <- summary(nba.model4)$coefficients[, "Pr(>|z|)"]
+
+# Display the results
+result_table <- data.frame(
+  Coefficient = names(coef(nba.model4)),
+  Estimate = coef(nba.model4),
+  P_value = p_values
+)
+
+# Display the result table
+print(result_table)
+
+```
+
+All predictors are significant in this model.
 

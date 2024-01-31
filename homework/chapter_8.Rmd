@@ -1,0 +1,158 @@
+1. __Housing prices.__ @Brown2004 describe "A Hierarchical Linear Model Approach for Assessing the Effects of House and Neighborhood Characteristics on Housing Prices". Based on the title of their paper: (a) give the observational units at Level One and Level Two, and (b) list potential explanatory variables at both Level One and Level Two.
+
+(a) Observational Units:
+   - Level One: Individual houses or properties
+   - Level Two: Neighborhoods or groups of houses
+
+(b) Potential Explanatory Variables:
+   - Level One (Individual House):
+     - House size
+     - Number of bedrooms and bathrooms
+     - Age of the house
+     - Condition of the house
+
+   - Level Two (Neighborhood):
+     - Median income of the neighborhood
+     - Crime rates in the neighborhood
+     - Quality of schools in the neighborhood
+     - Neighborhood aesthetics and overall environment
+
+
+3. In the preceding problem, for each of the following sets of predictors: (a) write out the two-level model for predicting housing prices, (b) write out the corresponding composite model, and (c) determine how many model parameters (fixed effects and variance components) must be estimated.
+    - Square footage, number of bedrooms
+    - Median neighborhood income, rating of neighborhood schools
+    - Square footage, number of bedrooms, age of house, median neighborhood housing price
+    - Square footage, median neighborhood income, rating of neighborhood schools, median neighborhood housing price
+    
+  
+
+1. **Square Footage, Number of Bedrooms:**
+   - Two-Level Model:
+     \[
+     \text{Level 1: } \text{Housing Price}_{ij} = \beta_{0j} + \beta_{1j}(\text{Square Footage}_{ij}) + \beta_{2j}(\text{Number of Bedrooms}_{ij}) + e_{ij}
+     \]
+     \[
+     \text{Level 2: } \beta_{0j} = \gamma_{00} + u_{0j} \quad \text{and} \quad \beta_{1j} = \gamma_{10} + u_{1j} \quad \text{and} \quad \beta_{2j} = \gamma_{20} + u_{2j}
+     \]
+   - Composite Model:
+     \[
+     \text{Housing Price}_{ij} = \gamma_{00} + \gamma_{10}(\text{Square Footage}_{ij}) + \gamma_{20}(\text{Number of Bedrooms}_{ij}) + u_{0j} + u_{1j}(\text{Square Footage}_{ij}) + u_{2j}(\text{Number of Bedrooms}_{ij}) + e_{ij}
+     \]
+   - Number of Parameters:
+     - Fixed Effects: 3 (\(\gamma_{00}, \gamma_{10}, \gamma_{20}\))
+     - Variance Components: 3 (\(u_{0j}, u_{1j}, u_{2j}\))
+
+2. **Median Neighborhood Income, Rating of Neighborhood Schools:**
+   - Two-Level Model:
+     \[
+     \text{Level 1: } \text{Housing Price}_{ij} = \beta_{0j} + \beta_{1j}(\text{Median Income}_{j}) + \beta_{2j}(\text{School Rating}_{j}) + e_{ij}
+     \]
+     \[
+     \text{Level 2: } \beta_{0j} = \gamma_{00} + u_{0j} \quad \text{and} \quad \beta_{1j} = \gamma_{10} + u_{1j} \quad \text{and} \quad \beta_{2j} = \gamma_{20} + u_{2j}
+     \]
+   - Composite Model:
+     \[
+     \text{Housing Price}_{ij} = \gamma_{00} + \gamma_{10}(\text{Median Income}_{j}) + \gamma_{20}(\text{School Rating}_{j}) + u_{0j} + u_{1j}(\text{Median Income}_{j}) + u_{2j}(\text{School Rating}_{j}) + e_{ij}
+     \]
+   - Number of Parameters:
+     - Fixed Effects: 3 (\(\gamma_{00}, \gamma_{10}, \gamma_{20}\))
+     - Variance Components: 3 (\(u_{0j}, u_{1j}, u_{2j}\))
+
+3. **Square Footage, Number of Bedrooms, Age of House, Median Neighborhood Housing Price:**
+   - Two-Level Model:
+     \[
+     \text{Level 1: } \text{Housing Price}_{ij} = \beta_{0j} + \beta_{1j}(\text{Square Footage}_{ij}) + \beta_{2j}(\text{Number of Bedrooms}_{ij}) + \beta_{3j}(\text{Age of House}_{ij}) + \beta_{4j}(\text{Median Housing Price}_{j}) + e_{ij}
+     \]
+     \[
+     \text{Level 2: } \beta_{0j} = \gamma_{00} + u_{0j} \quad \text{and so on...}
+     \]
+   - Composite Model:
+     \[
+     \text{Housing Price}_{ij} = \gamma_{00} + \gamma_{10}(\text{Square Footage}_{ij}) + \gamma_{20}(\text{Number of Bedrooms}_{ij}) + \gamma_{30}(\text{Age of House}_{ij}) + \gamma_{40}(\text{Median Housing Price}_{j}) + \text{random effects terms} + e_{ij}
+     \]
+   - Number of Parameters:
+     - Fixed Effects: 5 (\(\gamma_{00}, \gamma_{10}, \gamma_{20}, \gamma_{30}, \gamma_{40}\))
+
+4. **Square Footage, Median Neighborhood Income, Rating of Neighborhood Schools, Median Neighborhood Housing Price:**
+
+
+**Square Footage, Median Neighborhood Income, Rating of Neighborhood Schools, Median Neighborhood Housing Price:**
+
+- **Two-Level Model:**
+  \[
+  \begin{align*}
+  \text{Level 1: } & \text{Housing Price}_{ij} = \beta_{0j} + \beta_{1j}(\text{Square Footage}_{ij}) + \beta_{2j}(\text{Median Income}_{j}) + \beta_{3j}(\text{School Rating}_{j}) + \beta_{4j}(\text{Median Housing Price}_{j}) + e_{ij} \\
+  \text{Level 2: } & \beta_{0j} = \gamma_{00} + u_{0j} \quad \text{and so on...}
+  \end{align*}
+  \]
+
+- **Composite Model:**
+  \[
+  \text{Housing Price}_{ij} = \gamma_{00} + \gamma_{10}(\text{Square Footage}_{ij}) + \gamma_{20}(\text{Median Income}_{j}) + \gamma_{30}(\text{School Rating}_{j}) + \gamma_{40}(\text{Median Housing Price}_{j}) + \text{random effects terms} + e_{ij}
+  \]
+
+- **Number of Parameters:**
+  - Fixed Effects: 5 (\(\gamma_{00}, \gamma_{10}, \gamma_{20}, \gamma_{30}, \gamma_{40}\))
+  
+  
+6. Why is the contour plot for multivariate normal density in Figure \@ref(fig:contour-boundary)(b) tilted from southwest to northeast, but the contour plot in Figure \@ref(fig:contour-boundary)(a) is not tilted?
+
+
+```{r, include=FALSE}
+library(MASS)
+library(gridExtra)  
+library(mnormt) 
+library(lme4) 
+library(knitr) 
+library(kableExtra)
+library(tidyverse)
+
+
+#Code for next plot
+e0 <- seq(-8,8,length=51)  
+e1 <- seq(-4,4,length=51)
+xy <- expand.grid(e0,e1)
+
+Sigma <- matrix(c(4,0,0,1),2,2)
+Mu <- c(0,0)
+z <- dmnorm(xy, Mu, Sigma)
+zframe <- data.frame(xy, z)
+density <- xy[z==max(z),]
+con.1 <- ggplot(data = zframe, aes(x = Var1, y = Var2, z = z)) + 
+  geom_contour(stat = "contour", lineend = "butt", 
+               linejoin = "round", linemitre = 1, 
+               na.rm = FALSE, colour = "black") + 
+  labs(x = "u", y = "v", title = "(a)") + 
+  scale_y_continuous(limits = c(-5,5))
+
+# Positive correlation
+Sigma <- matrix(c(4,1.5,1.5,1),2,2)
+Mu <- c(0,0)
+z <- dmnorm(xy, Mu, Sigma)
+zframe <- data.frame(xy, z)
+density <- xy[z==max(z),]
+con.2 <- ggplot(data = zframe, aes(x = Var1, y = Var2, z = z)) + 
+  geom_contour(stat = "contour", lineend = "butt", 
+               linejoin = "round", linemitre = 1, 
+               na.rm = FALSE, colour = "black") + 
+  labs(x = "u", y = "v", title = "(b)") + 
+  scale_y_continuous(limits = c(-5,5))
+```
+
+```{r contour-boundary,fig.align="center",out.width="60%", fig.cap='Contour plots illustrating a multivariate normal density with (a) no correlation between error terms, and (b) positive correlation between error terms.',echo=FALSE, warning=FALSE}
+grid.arrange(con.1, con.2, ncol = 2)
+```
+
+
+The difference in the tilt of the contour plots in Figures (a) and (b) is due to the correlation structure specified in the covariance matrix (\(\Sigma\)) for the multivariate normal distribution.
+This means that the the covariance terms are zero. In a diagonal covariance matrix, the variables are uncorrelated, and the contours of the multivariate normal distribution are aligned with the coordinate axes
+
+10. Give a short rule in your own words describing when an interpretation of an estimated coefficient should "hold constant" another covariate or "set to 0" that covariate (see Section \@ref(interp:modeld)).
+
+An estimated coefficien should be held constant for another covariate when you want to isolate and understand the specific impact of the variable of interest, without the influence of the other covariate. 
+
+14. Interpret other estimated parameters from Model F beyond those interpreted in Section \@ref(modelf): $\hat{\alpha}_{0}$, $\hat{\alpha}_{2}$, $\hat{\alpha}_{3}$, $\hat{\beta}_{0}$, $\hat{\gamma}_{0}$, $\hat{\zeta}_{0}$, $\hat{\rho}_{wx}$, $\hat{\sigma}^{2}$, $\hat{\sigma}_{u}^{2}$, and $\hat{\sigma}_{z}^{2}$.
+
+$mpqab = 0.20$ (mpqab): A one-unit increase in the absorption subscale score is associated with an estimated 0.20 mean increase in performance anxiety for musicians, after controlling for previous diary entries, audience, positive emotionality, absorption, and instrument.
+
+$students= 3.61$ (students): When the audience consists of students compared to instructors, there is an estimated 3.61 mean increase in performance anxiety for musicians performing in an ensemble group (solo=0), controlling for the effects of previous diary entries, audience, positive emotionality, absorption, and instrument.

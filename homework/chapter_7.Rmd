@@ -1,0 +1,112 @@
+1. __Examples with correlated data.__ For each of the following studies: 
+    - Identify the most basic observational units
+    - Identify the grouping units (could be multiple levels of grouping)
+    - State the response(s) measured and variable type (normal, binary, Poisson, etc.)
+    - Write a sentence describing the within-group correlation.
+    - Identify fixed and random effects
+
+a. *Nurse stress study.*  Four wards were randomly selected at each of 25 hospitals and randomly assigned to offer a stress reduction program for nurses on the ward or to serve as a control.  At the conclusion of the study period, a random sample of 10 nurses from each ward completed a test to measure job-related stress.  Factors assumed to be related include nurse experience, age, hospital size and type of ward.
+
+
+**Observational Units:**
+Individual nurses
+
+**Grouping Units:**
+- First level: Wards within hospitals.
+- Second level: Hospitals.
+
+**Response Measured and Variable Type:**
+- Response measured: job-related stress, and it is likely a continuous variable <br>
+- Variable type: Normal (continuous) given that stress levels are often measured on a scale.
+
+**Within-Group Correlation:**
+The within-group correlation refers to the degree to which job-related stress levels among nurses within the same ward are correlated.
+
+**Fixed and Random Effects:**
+- Fixed Effects: The stress reduction program (treatment/control) is a fixed effect as it is deliberately imposed by the researchers.
+- Random Effects: Hospitals and wards are random effects as they are selected randomly and are not under the direct control of the researchers. Additionally, the random assignment of wards to the stress reduction program or control group adds a level of randomization.
+
+
+b. *Epilepsy study.*  Researchers conducted a randomized controlled study where patients were randomly assigned to either an anti-epileptic drug or a placebo.  For each patient, the number of seizures at baseline was measured over a 2-week period.  For four consecutive visits the number of seizures were determined over the past 2-week period. Patient age and sex along with visit number were recorded.
+
+**Observational Units:**
+Individual patients
+
+**Grouping Units:**
+- First level: Patients (individual observations).
+- Second level: Visits for each patient.
+
+**Response Measured and Variable Type:**
+- Response measured: The number of seizures.
+- Variable type: Poisson, considering the count nature of seizures over a specific time period.
+
+**Within-Group Correlation:**
+The within-group correlation in this study would reflect the correlation in the number of seizures for a particular patient across the four consecutive visits. It examines whether the number of seizures within the same patient tends to be correlated over time.
+
+**Fixed and Random Effects:**
+- Fixed Effects: The type of treatment (anti-epileptic drug or placebo) is a fixed effect as it is deliberately imposed by the researchers.
+- Random Effects: Patients are considered random effects as they are not controlled by the researchers and are part of the random assignment process. The visit number itself can be considered a random effect if it represents a random sample of visits from a larger population.
+
+c. *Cockroaches!*  For a study of cockroach infestation, traps were set up in the kitchen, bathroom, and bedroom in a random sample of 100 New York City apartments. The goal is to estimate cockroach infestation levels given tenant income and age of the building.
+
+
+**Observational Units:**
+Individual apartments
+
+**Grouping Units:**
+- First level: Rooms within apartments (kitchen, bathroom, bedroom).
+- Second level: Apartments within New York City.
+
+**Response Measured and Variable Type:**
+- Response measured: The level of cockroach infestation. 
+- Variable type: Count variable and may follow a Poisson distribution, given that infestation levels are often quantified by the number of cockroaches.
+
+**Within-Group Correlation:**
+The within-group correlation pertains to the correlation in cockroach infestation levels among the different rooms within the same apartment
+
+**Fixed and Random Effects:**
+- Fixed Effects: The locations where traps are set are fixed effects as they are deliberately chosen by the researchers.
+- Random Effects: Apartments and the random sample of apartments within New York City are random effects as they are not under the direct control of the researchers. The random selection of apartments adds a level of randomization to the study.
+
+d. *Prairie restoration.*  Researchers at a small Midwestern college decided to experimentally explore the underlying causes of variation in soil reconstruction projects in order to make future projects more effective. Introductory ecology classes were organized to collect weekly data on plants in pots containing soil samples. Data will be examined to compare:
+    - germination and growth of two species of prairie plants—--leadplants (*Amorpha canescens*) and coneflowers (*Ratibida pinnata*).
+    - soil from a cultivated (agricultural) field, a natural prairie, and a restored (reconstructed) prairie.
+    - the effect of sterilization, since half of the sampled soil was sterilized to determine if rhizosphere differences were responsible for the observed variation.
+
+**Observational Units:**
+Individual pots containing soil samples
+
+**Grouping Units:**
+- First level: Different types of soil
+- Second level: Different species of prairie plants
+- Third level: Sterilization condition
+
+**Response Measured and Variable Type:**
+The responses measured are the germination and growth of two species of prairie plants, and these are likely continuous variables. The soil type and sterilization conditions are categorical variables, with soil type being categorical and sterilization being binary.
+
+**Within-Group Correlation:**
+The within-group correlation likely is related to the similarity in germination and growth patterns of plants within the same pot, as they share the same soil conditions and sterilization status.
+
+**Fixed and Random Effects:**
+- Fixed Effects: The type of soil, species of prairie plants, and sterilization condition are fixed effects as they are deliberately manipulated by the researchers.
+- Random Effects: Pots could be considered random effects since they are randomly assigned to different types of soil, plant species, and sterilization conditions. The randomness in the assignment adds a level of variability.
+
+e. *Radon in Minnesota.*  Radon is a carcinogen – a naturally occurring radioactive gas whose decay products are also radioactive – known to cause lung cancer in high concentrations. The EPA sampled more than 80,000 homes across the U.S.  Each house came from a randomly selected county and measurements were made on each level of each home.  Uranium measurements at the county level were included to improve the radon estimates.
+
+**Observational Units:**
+Individual levels of each home
+
+**Grouping Units:**
+- First level: Homes.
+- Second level: Counties.
+
+**Response Measured and Variable Type:**
+- Response measured:  The concentration of radon, and it is likely a continuous variable. 
+- Variable type: Normal since radon concentrations are usually measured on a numerical scale.
+
+**Within-Group Correlation:**
+The within-group correlation refers to the similarity in radon concentrations within the levels of the same home. Homes in the same county might share similar geological characteristics affecting radon levels, establishing a within-group correlation.
+
+**Fixed and Random Effects:**
+- Fixed Effects: The uranium measurements at the county level, though not explicitly mentioned, can be considered fixed effects as they are deliberately included to improve radon estimates.
+- Random Effects: Homes and counties are random effects as they are randomly selected, and their variations are of interest in the broader context of the study.
