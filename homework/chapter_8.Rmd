@@ -650,3 +650,5 @@ summary(airbnb.model6)
 
 8. **Correlation Between Reviews Effect and Overall Variability:**
    - For each 1-unit increase in the standard deviation of the effect of reviews on listing prices, there is a negative correlation of -0.063 with the overall variability in Airbnb listing prices.
+
+All predictors are not significant. This model is terrible. We should not use it.
