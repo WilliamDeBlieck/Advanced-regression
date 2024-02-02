@@ -23,8 +23,8 @@ Individual nurses
 The within-group correlation refers to the degree to which job-related stress levels among nurses within the same ward are correlated.
 
 **Fixed and Random Effects:**
-- Fixed Effects: The stress reduction program (treatment/control) is a fixed effect as it is deliberately imposed by the researchers.
-- Random Effects: Hospitals and wards are random effects as they are selected randomly and are not under the direct control of the researchers. Additionally, the random assignment of wards to the stress reduction program or control group adds a level of randomization.
+- Fixed Effects: Stress Reduction Program, Type of Ward, Hospital Size, Nurse Experience, and Age
+- Random Effects: Wards, Hospitals, and Nurses within Wards
 
 
 b. *Epilepsy study.*  Researchers conducted a randomized controlled study where patients were randomly assigned to either an anti-epileptic drug or a placebo.  For each patient, the number of seizures at baseline was measured over a 2-week period.  For four consecutive visits the number of seizures were determined over the past 2-week period. Patient age and sex along with visit number were recorded.
@@ -44,8 +44,8 @@ Individual patients
 The within-group correlation in this study would reflect the correlation in the number of seizures for a particular patient across the four consecutive visits. It examines whether the number of seizures within the same patient tends to be correlated over time.
 
 **Fixed and Random Effects:**
-- Fixed Effects: The type of treatment (anti-epileptic drug or placebo) is a fixed effect as it is deliberately imposed by the researchers.
-- Random Effects: Patients are considered random effects as they are not controlled by the researchers and are part of the random assignment process. The visit number itself can be considered a random effect if it represents a random sample of visits from a larger population.
+- Fixed Effects: Treatment, Visit Number, Patient Age, and Sex
+- Random Effects: Patients and Time
 
 c. *Cockroaches!*  For a study of cockroach infestation, traps were set up in the kitchen, bathroom, and bedroom in a random sample of 100 New York City apartments. The goal is to estimate cockroach infestation levels given tenant income and age of the building.
 
@@ -65,8 +65,8 @@ Individual apartments
 The within-group correlation pertains to the correlation in cockroach infestation levels among the different rooms within the same apartment
 
 **Fixed and Random Effects:**
-- Fixed Effects: The locations where traps are set are fixed effects as they are deliberately chosen by the researchers.
-- Random Effects: Apartments and the random sample of apartments within New York City are random effects as they are not under the direct control of the researchers. The random selection of apartments adds a level of randomization to the study.
+- Fixed Effects: Location of Traps, Tenant Income, Age of the Building
+- Random Effects: Apartments
 
 d. *Prairie restoration.*  Researchers at a small Midwestern college decided to experimentally explore the underlying causes of variation in soil reconstruction projects in order to make future projects more effective. Introductory ecology classes were organized to collect weekly data on plants in pots containing soil samples. Data will be examined to compare:
     - germination and growth of two species of prairie plants—--leadplants (*Amorpha canescens*) and coneflowers (*Ratibida pinnata*).
@@ -88,8 +88,8 @@ The responses measured are the germination and growth of two species of prairie 
 The within-group correlation likely is related to the similarity in germination and growth patterns of plants within the same pot, as they share the same soil conditions and sterilization status.
 
 **Fixed and Random Effects:**
-- Fixed Effects: The type of soil, species of prairie plants, and sterilization condition are fixed effects as they are deliberately manipulated by the researchers.
-- Random Effects: Pots could be considered random effects since they are randomly assigned to different types of soil, plant species, and sterilization conditions. The randomness in the assignment adds a level of variability.
+- Fixed Effects: Soil Reconstruction Project, Weeks of Data Collection
+- Random Effects: Pots and Introductory Ecology Classes
 
 e. *Radon in Minnesota.*  Radon is a carcinogen – a naturally occurring radioactive gas whose decay products are also radioactive – known to cause lung cancer in high concentrations. The EPA sampled more than 80,000 homes across the U.S.  Each house came from a randomly selected county and measurements were made on each level of each home.  Uranium measurements at the county level were included to improve the radon estimates.
 
@@ -108,5 +108,5 @@ Individual levels of each home
 The within-group correlation refers to the similarity in radon concentrations within the levels of the same home. Homes in the same county might share similar geological characteristics affecting radon levels, establishing a within-group correlation.
 
 **Fixed and Random Effects:**
-- Fixed Effects: The uranium measurements at the county level, though not explicitly mentioned, can be considered fixed effects as they are deliberately included to improve radon estimates.
-- Random Effects: Homes and counties are random effects as they are randomly selected, and their variations are of interest in the broader context of the study.
+- Fixed Effects: County, Uranium Measurements
+- Random Effects: Homes (within counties) and Levels of Homes

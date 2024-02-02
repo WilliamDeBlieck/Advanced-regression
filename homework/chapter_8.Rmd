@@ -149,10 +149,504 @@ This means that the the covariance terms are zero. In a diagonal covariance matr
 
 10. Give a short rule in your own words describing when an interpretation of an estimated coefficient should "hold constant" another covariate or "set to 0" that covariate (see Section \@ref(interp:modeld)).
 
-An estimated coefficien should be held constant for another covariate when you want to isolate and understand the specific impact of the variable of interest, without the influence of the other covariate. 
+
+When interpreting an estimated coefficient, you should hold constant another covariate when you want to isolate the effect of the variable of interest while keeping the other covariate constant at a specific value. On the other hand, you should set to 0 a covariate when it is a categorical variable, and you want to compare the group represented by 0 to the reference group, understanding the change in the dependent variable when that specific covariate is absent.
 
 14. Interpret other estimated parameters from Model F beyond those interpreted in Section \@ref(modelf): $\hat{\alpha}_{0}$, $\hat{\alpha}_{2}$, $\hat{\alpha}_{3}$, $\hat{\beta}_{0}$, $\hat{\gamma}_{0}$, $\hat{\zeta}_{0}$, $\hat{\rho}_{wx}$, $\hat{\sigma}^{2}$, $\hat{\sigma}_{u}^{2}$, and $\hat{\sigma}_{z}^{2}$.
 
 $mpqab = 0.20$ (mpqab): A one-unit increase in the absorption subscale score is associated with an estimated 0.20 mean increase in performance anxiety for musicians, after controlling for previous diary entries, audience, positive emotionality, absorption, and instrument.
 
 $students= 3.61$ (students): When the audience consists of students compared to instructors, there is an estimated 3.61 mean increase in performance anxiety for musicians performing in an ensemble group (solo=0), controlling for the effects of previous diary entries, audience, positive emotionality, absorption, and instrument.
+
+## Guided
+
+Music performance joy. In this chapter, we studied models for predicting music performance anxiety, as measured by the negative affect scale from the PANAS instrument. Now we will examine models for predicting the happiness of musicians prior to performances, as measured by the positive affect scale from the PANAS instrument.
+
+To begin, run the following models:
+
+Model A = unconditional means model
+Model B = indicator for instructor audience type and indicator for student audience type at Level One; no Level Two predictors
+Model C = indicator for instructor audience type and indicator for student audience type at Level One; centered MPQ absorption subscale as Level Two predictor for intercept and all slope terms
+Model D = indicator for instructor audience type and indicator for student audience type at Level One; centered MPQ absorption subscale and a male indicator as Level Two predictors for intercept and all slope terms
+
+
+```{R}
+music = read.csv("data/musicdata.csv")
+head(music)
+```
+
+- `id` = unique musician identification number
+- `diary` = cumulative total of diaries filled out by musician
+- `perf_type` = type of performance (Solo, Large Ensemble, or Small Ensemble)
+- `audience` = who attended (Instructor, Public, Students, or Juried)
+- `memory` = performed from Memory, using Score, or Unspecified
+- `na` = negative affect score from PANAS
+- `gender` = musician gender
+- `instrument` = Voice, Orchestral, or Piano
+- `mpqab` = absorption subscale from MPQ
+- `mpqpem` = positive emotionality (PEM) composite scale from MPQ
+- `mpqnem` = negative emotionality (NEM) composite scale from MPQ
+
+```{R}
+model_A <- lmer(pa~ 1 + (1|id), REML=T, data=music)
+
+music <- music %>%
+  mutate(students = ifelse(audience=="Student(s)",1,0),
+         juried = ifelse(audience=="Juried Recital",1,0),
+         public = ifelse(audience=="Public Performance",1,0),
+         instructor = ifelse(audience=="Instructor",1,0),
+         cmpqab = mpqab - mean(mpqab),
+         female = ifelse(gender=="Female",1,0),
+         male = ifelse(gender=="Male", 1, 0)
+)
+
+model_B <- lmer(pa ~ instructor + students + (instructor +
+students|id), REML=T, data=music)
+
+model_C <- lmer(pa ~ instructor + students + cmpqab +
+cmpqab:students + cmpqab:instructor +
+(instructor + students|id), REML=T, data=music)
+
+
+model_D <- lmer(pa ~ instructor + students + cmpqab + male +
+cmpqab:students + cmpqab:instructor + male:students +
+male:instructor + (instructor + students|id), REML=T,
+data=music)
+```
+
+
+    a. Perform an exploratory data analysis by comparing positive affect (happiness) to Level One and Level Two covariates using appropriate graphs. Comment on interesting trends, supporting your comments with appropriate summary statistics.
+
+
+
+```{R}
+ggplot(music, aes(x = mpqab, y = pa)) +
+  geom_point() +
+  facet_wrap(~audience, scales = "free") +
+  labs(title = "Scatter Plot of Positive Affect vs. MPQ Absorption by Audience Type",
+       x = "MPQ Absorption", y = "Positive Affect")
+
+ggplot(music, aes(x = gender, y = pa)) +
+  geom_boxplot() +
+  labs(title = "Box Plot of Positive Affect by Gender",
+       x = "Gender", y = "Positive Affect")
+
+ggplot(music, aes(x = audience, y = pa, fill = gender)) +
+  geom_boxplot(position = "dodge") +
+  labs(title = "Box Plot of Positive Affect by Audience Type and Gender",
+       x = "Audience Type", y = "Positive Affect", fill = "Gender")
+
+ggplot(music, aes(x = instrument, y = pa)) +
+  geom_boxplot(fill = "blue", position = "dodge") +
+  labs(title = "Box Plot of Positive Affect by Instrument",
+       x = "Instrument", y = "Positive Affect")
+
+ggplot(data=music, aes(x=previous,y=pa)) +
+geom_point() +
+geom_smooth(method="lm") +
+ylab("Positive affect") + xlab("Previous Performances")
+
+generate_scatter_plot <- function(data, x_var, y_var, x_label, y_label) {
+  ggplot(data = data, aes(x = !!rlang::sym(x_var), y = !!rlang::sym(y_var))) +
+    geom_point() +
+    geom_smooth(method = "lm", color = "red") +
+    ylab(y_label) +
+    xlab(x_label)
+}
+
+
+generate_scatter_plot(music, "age", "pa", "Age", "Positive affect")
+generate_scatter_plot(music, "years_study", "pa", "Years of Study", "Positive affect")
+generate_scatter_plot(music, "mpqpem", "pa", "PEM", "Positive affect")
+generate_scatter_plot(music, "mpqnem", "pa", "NEM", "Positive affect")
+generate_scatter_plot(music, "mpqcon", "pa", "Constraint", "Positive affect")
+generate_scatter_plot(music, "mpqab", "pa", "Absorbtion", "Positive affect")
+
+
+
+by(music$pa,music$memory,summary)
+by(music$pa,music$perform_type,summary)
+by(music$pa,music$instrument,summary)
+by(music$pa,music$audience,summary)
+by(music$pa,music$gender,summary)
+
+
+```
+
+Females tend to have a higher variablilty of possitive effect. Previous preformence seems to have no effect. Postive effect is normally distributed across all preformance types and instrument types.
+
+    b. Report estimated fixed effects and variance components from Model A, using proper notation from this chapter (no interpretations required). Also report and interpret an intraclass correlation coefficient.
+
+
+```{R}
+summary(model_A)
+```
+
+1. \( \hat{\alpha}_{0} = 32.56 \)
+2. \( \hat{\sigma}^{2} = 41.70 \)
+3. \( \hat{\sigma}^{2}_{u} = 23.72 \)
+4. \( \hat{\rho} = \frac{23.7}{23.72 + 41.7} = 0.362 \)
+
+Approximately 36% of the overall variance in pre-performance's happiness score can be ascribed to variations among individuals.
+
+    c. Report estimated fixed effects and variance components from Model B, using proper notation from this chapter. Interpret your MLE estimates for $\hat{\alpha}_{0}$ (the intercept), $\hat{\beta}_{1}$ (the instructor indicator), and $\hat{\sigma}_{u}$ (the Level Two standard deviation for the intercept). Also report and interpret an appropriate pseudo R-squared value.
+
+```{R}
+summary(model_B)
+```
+1. \( \hat{\alpha}_{0} = 34.73 \)
+1. \( \hat{\beta}_{0} = -4.1901 \)
+1. \( \hat{\gamma}_{0} =  -4.4540 \)
+1. \( \hat{\sigma}^{2} = 36.39 \)
+1. \( \hat{\sigma}^{2}_{u} = 20.34 \)
+1. \( \hat{\sigma}^{2}_{v} = 11.61 \)
+1. \( \hat{\sigma}^{2}_{w} = 12.08 \)
+
+- The estimated mean happiness for musicians participating in juried recitals and public performances (\(\hat{\alpha}\)) is 34.73, representing the average happiness for these populations.
+  
+- The estimated mean decrease in pre-performance happiness levels (\(\hat{\beta_0}\)) is -4.19 when musicians play in front of instructors compared to juries or the general public.
+
+- The estimated population standard deviation of pre-performance happiness levels (\(\hat{\sigma_u}\)) for juried recitals and public performances is 4.51.
+
+\[ R^2(c) = \frac{20.34 + 11.61 + 12.08}{20.34 + 11.61 + 12.08 + 36.39} = .5475\]
+
+
+About 54.75% of the variability in pre-performance happiness scores within individuals is accounted for by the presence of different audience types.
+
+
+    d. Write out Model C, using both separate Level One and Level Two models as well as a composite model. Be sure to express distributions for error terms. How many parameters must be estimated in Model C?
+
+Level 1:
+\[a_i + b_i \cdot \text{instructor}_{ij} + c_i \cdot \text{students}_{ij}\]
+
+
+Level 2:
+\[\alpha_0 + \alpha_1 \cdot \text{compqb}_i + u_i \]
+\[\beta_0 + \beta_1 \cdot \text{compqb}_i + v_i \]
+\[\gamma_0 + \gamma_1 \cdot \text{compqb}_i + w_i \]
+
+
+Composite:
+\[\alpha_0 + \alpha_1 \cdot \text{compqbi} + \beta_0 \cdot \text{instructor}_{ij} + \beta_1 \cdot \text{compqbi} \cdot \text{instructor}_{ij} + \]
+\[ \gamma_0 \cdot \text{students}_{ij} + \gamma_1 \cdot \text{compqbi} \cdot \text{students}_{ij} +  [u_i + v_i \cdot \text{instructor}_{ij} + w_i \cdot \text{students}_{ij}] \]
+
+variance-covariance structure:
+\[ \begin{bmatrix} \sigma^2_u & 0 & 0 \\ \sigma_{uv} & \sigma^2_v & 0 \\ \sigma_{uw} & \sigma_{vw} & \sigma^2_w \end{bmatrix} \]
+
+
+    e. Report and interpret the following parameter estimates from Model C: $\hat{\alpha}_{0}$, $\hat{\alpha}_{1}$, $\hat{\gamma}_{0}$, $\hat{\beta}_{1}$, $\hat{\sigma}_{u}$, $\hat{\sigma}_{v}$, and $\hat{\rho}_{uv}$. Interpretations for variance components should be done in terms of standard deviations and correlation coefficients.
+
+```{R}
+summary(model_C)
+```
+
+1. \( \hat{\alpha}_{0} = 34.82 \)
+2. \( \hat{\beta}_{0} = -4.25 \)
+3. \( \hat{\gamma}_{0} = -4.65 \)
+4. \( \hat{\alpha}_{1} = -0.02 \)
+5. \( \hat{\beta}_{1} = 0.37 \)
+6. \( \hat{\gamma}_{1} = 0.29 \)
+7. \( \hat{\sigma} = 6.04 \)
+8. \( \hat{\sigma}_{u} = 4.51 \)
+9. \( \hat{\sigma}_{v} = 2.84 \)
+10. \( \hat{\sigma}_{w} = 3.28 \)
+11. \( p_{\hat{u}\hat{v}} = 0.095 \)
+12. \( p_{\hat{v}\hat{w}} = 0.601 \)
+
+
+
+1. **Estimated Mean Happiness:**
+   - \(\hat{\alpha} = 34.82\) is the estimated mean happiness for music students participating in juried and public performances based on the average levels of openness for sensory absorbsion.
+
+
+2. **Absorption Level Impact:**
+   - Each incremental point in absorption level corresponds to an estimated decrease of 0.02 points in pre-performance happiness for individuals facing juries or public.
+
+3. **Performance Setting Influence:**
+   - Individuals with average absorption levels experience an estimated decline of 4.65 points in pre-performance happiness when playing in the presence of students rather than facing juries or public.
+
+4. **Instructor Performances:**
+   - Each incremental point in in absorption performers performing for instructors exhibit a happiness increase of 0.37 points.
+
+5. **Population Standard Deviation:**
+   - The population standard deviation of pre-performance happiness levels for juried and public performances, holding absorption levels, is estimated at \(\hat{\sigma}_u = 4.51\).
+
+6. **Population Standard Deviation Difference:**
+   - The population standard deviation of variations in pre-performance happiness levels between instructor, juried, or public performances, holding absorption levels, is estimated at \(\hat{\sigma}_v = 2.84\).
+
+7. **Correlation Between Errors:**
+   - The population correlation between errors in pre-performance happiness levels for juried or public performances and errors in happiness increases for instructorsis \(u v \hat{\rho} = 0.095\)
+   
+  
+  
+    f. Report and interpret the same parameter estimates listed above from Model D. In each case, the new interpretation should involve a small modification of your interpretation from Model C.  Use underlines or highlights to denote the part of the Model D interpretation that differs from the Model C interpretation.
+
+```{R}
+summary(model_D)
+```
+
+1. \( \alpha_0 = 33.92 \)
+2. \( \hat{\beta}_0 = -3.72 \)
+3. \( \gamma_0 = -4.73 \)
+4. \( \alpha_1 = -0.06 \)
+5. \( \hat{\beta}_1 = 0.40 \)
+6. \( \gamma_1 = 0.29 \)
+7. \( \alpha_2 = 3.05 \)
+8. \( \hat{\beta}_2 = -2.21 \)
+9. \( \gamma_2 = -0.21 \)
+10. \( \hat{\sigma} = 6.03 \)
+11. \( \hat{\sigma}_u = 4.30 \)
+12. \( \hat{\sigma}_v = 2.86 \)
+13. \( \hat{\sigma}_w = 3.27 \)
+14. \( p_{\hat{u}\hat{v}} = 0.28 \)
+15. \( p_{\hat{u}\hat{w}} = -0.75 \)
+16. \( p_{\hat{v}\hat{w}} = 0.43 \)
+   
+1. **Estimated Mean Happiness**
+   - The estimated mean happiness (\(\hat{\alpha} = 33.92\)) is derived for female musicians participating in juried and public performances based on the average levels of openness to absorbsion.
+
+2. **Impact of Baseline Absorption Level on Happiness**
+   - For each incremental point in  the absorption level, subjects experience an estimated mean decrease of 0.06 points in pre-performance happiness when facing juries and public. Holding gender differences.
+
+3. **Effect of Audience Type on Happiness**
+   - Female subjects with average levels of absorption face an estimated mean decrease of 4.73 points in pre-performance happiness when playing in front of other students, as opposed to juries or public.
+
+4. **Interaction Effect with Instructors:**
+   - For each 1-point increase in baseline absorption level, subjects performing before instructors have an estimated mean happiness 0.40 points higher, compared to a 0.06 decrease for performances in front of juries and the general public.
+
+5. **Standard Deviations:**
+   - \(\hat{\sigma}_u = 4.30\) represents the standard deviation in happiness scores before juried and public performances, after controlling for absorption and gender.
+   - \(\hat{\sigma}_v = 2.86\) is the standard deviation of differences in pre-performance happiness levels between instructor audiences and juried recitals or public performances, after controlling absorption and gender.
+
+6. **Correlation Between Errors:**
+   - The correlation (\(\hat{u}\hat{v}\rho = 0.281\)) reflects the relationship between errors in happiness scores before juried or public performances and errors in increasesin happiness for instructor audiences. Controlling for absorption and gender.
+   
+       g. Also report and interpret the following parameter estimates from Model D: $\hat{\alpha}_{2}$ and $\hat{\beta}_{2}$.
+
+
+2. **Gender Difference in Mean Happiness:**
+   - Male subjects exhibit an estimated mean happiness before performances in front of juries and the general public that is 3.05 points greater than females. Controlling for baseline absorption levels.
+
+3. **Gender Interaction with Instructors:**
+   - After controlling for absorption, male subjects have an estimated mean happiness before performances in front of instructors that is 0.84 points higher than females. This is in contrast to the 3.05 points higher happiness observed in front of juries and the general public.
+   
+
+    h. Use a drop in deviance statistic (likelihood ratio test) to compare Model C vs. Model D. Give a test statistic and p-value, then state a conclusion. Also compare Models C and D with appropriate pseudo R-squared value(s) and with AIC and BIC statistics.
+
+
+```{R}
+library(DescTools)
+lr_test <- anova(model_C, model_D, test = "Chisq")
+
+test_statistic <- lr_test$Chisq[2]
+p_value <- lr_test$`Pr(>Chisq)`[2]
+
+cat("Likelihood Ratio Test:\n")
+cat("Test Statistic:", test_statistic, "\n")
+cat("P-value:", p_value, "\n")
+
+aic_C <- AIC(model_C)
+aic_D <- AIC(model_D)
+bic_C <- BIC(model_C)
+bic_D <- BIC(model_D)
+
+cat("\nAIC and BIC:\n")
+cat("Model C - AIC:", aic_C, "BIC:", bic_C, "\n")
+cat("Model D - AIC:", aic_D, "BIC:", bic_D, "\n")
+
+summary(model_C)
+summary(model_D)
+
+```
+
+Pseudo R^2 = (6.040 - 6.034)/(6.040) = 0.00099337748
+
+Base on AIC and BIC values and the value of the pseudo R^2 comparing models we can see that model D is signifcantly better at predicting positive affects.
+
+
+## Open Ended
+
+2. **Airbnb in Chicago.**  @Trinh2018 collected data on 1561 Airbnb listings in Chicago from August 2016, and then they merged in information from the neighborhood (out of 43 in Chicago) where the listing was located.  We can examine traits that are associated with listings that command a higher price.  Conduct an EDA, build a multilevel model, and interpret model coefficients to answer questions such as: What are characteristics of a higher priced listing?  Are the most influential traits associated with individual listings or entire neighborhoods?  Are there intriguing interactions where the effect of one variable depends on levels of another?
+
+    The following variables can be found in `airbnb.csv` or derived from the variables found there:
+
+    - `overall_satisfaction` = rating on a 0-5 scale.
+    - `satisfaction` = 1 if `overall_satisfaction` is 5, 0 otherwise
+    - `price` = price for one night (in dollars)
+    - `reviews` = number of reviews posted
+    - `room_type` = Entire home/apt, Private room, or Shared room
+    - `accommodates` = number of people the unit can hold
+    - `bedrooms` = number of bedrooms
+    - `minstay` = minimum length of stay (in days)
+    - `neighborhood` = neighborhood where unit is located (1 of 43)
+    - `district` = district where unit is located (1 of 9)
+    - `WalkScore` = quality of the neighborhood for walking (0-100)
+    - `TransitScore` = quality of the neighborhood for public transit (0-100)
+    - `BikeScore` = quality of the neighborhood for biking (0-100)
+    - `PctBlack` = proportion of black residents in a neighborhood
+    - `HighBlack` = 1 if `PctBlack` above .60, 0 otherwise
+
+
+```{R}
+airbnb <- read_csv("data/airbnb.csv")
+
+# Question said highBlack existed. Question LIED!
+airbnb <- airbnb %>%
+  mutate(HighBlack = ifelse(PctBlack > .6, "Yes", "No"))
+```
+
+```{R}
+ggplot(airbnb, aes(bedrooms, price)) +
+geom_point() +
+geom_smooth(method = lm) +
+labs(x="# of Bedrooms", y="Price")
+
+
+ggplot(airbnb, aes(reviews, price)) +
+geom_point() +
+geom_smooth(method = lm) +
+labs(x="# of reveiws", y="Price")
+
+ggplot(airbnb, aes(overall_satisfaction, price)) +
+geom_boxplot() +
+labs(x="satisfaction", y="Price")
+
+ggplot(airbnb, aes(accommodates, price)) +
+geom_point() +
+geom_smooth(method = lm) +
+labs(x="# of accommodates", y="Price")
+
+ggplot(airbnb, aes(minstay, price)) +
+geom_point() +
+geom_smooth(method = lm) +
+labs(x="# of accommodates", y="Price")
+
+```
+
+
+```{R}
+ggplot(airbnb, aes(WalkScore, price)) +
+geom_point() +
+geom_smooth(method = lm) +
+labs(x="WalkScore", y="Price")
+
+ggplot(airbnb, aes(TransitScore, price)) +
+geom_point() +
+geom_smooth(method = lm) +
+labs(x="TransitScore", y="Price")
+
+ggplot(airbnb, aes(BikeScore, price)) +
+geom_point() +
+geom_smooth(method = lm) +
+labs(x="BikeScore", y="Price")
+
+ggplot(airbnb, aes(PctBlack, price)) +
+geom_point() +
+geom_smooth(method = lm) +
+labs(x="PctBlack", y="Price")
+
+ggplot(airbnb, aes(district, price)) +
+geom_boxplot() +
+labs(x="district", y="Price")
+
+ggplot(airbnb, aes(HighBlack, price)) +
+geom_boxplot() +
+labs(x="HighBlack", y="Price")
+
+numeric_columns <- airbnb[sapply(airbnb, is.numeric)]
+cor(numeric_columns)
+```
+
+
+```{R}
+airbnb_model_test <- lmer(price ~ .^2 + (1|neighborhood),
+REML=T, data=airbnb)
+summary(airbnb_model_test)
+```
+
+```{R}
+airbnb.model1 <- lmer(price ~ HighBlack + TransitScore + bedrooms +
+reviews +
+overall_satisfaction + room_type + (1|neighborhood),
+REML=T, data=airbnb)
+summary(airbnb.model1)
+
+
+airbnb.model2 <- lmer(price ~ HighBlack + TransitScore +
+reviews +
+overall_satisfaction + room_type + (1|neighborhood),
+REML=T, data=airbnb)
+summary(airbnb.model2)
+
+airbnb.model3 <- lmer(price ~ HighBlack + TransitScore +
+reviews +
+overall_satisfaction + (1|neighborhood),
+REML=T, data=airbnb)
+summary(airbnb.model3)
+
+
+airbnb.model4 <- lmer(price ~ HighBlack +
+reviews +
+overall_satisfaction + (1|neighborhood),
+REML=T, data=airbnb)
+summary(airbnb.model4)
+
+
+airbnb.model5 <- lmer(price ~ HighBlack +
+reviews +
+overall_satisfaction + reviews:overall_satisfaction + (1|neighborhood),
+REML=T, data=airbnb)
+summary(airbnb.model5)
+
+airbnb.model6 <- lmer(price ~
+reviews +
+overall_satisfaction + (1|neighborhood),
+REML=T, data=airbnb)
+summary(airbnb.model6)
+
+
+anova(airbnb.model2, airbnb.model1)
+anova(airbnb.model3, airbnb.model2)
+anova(airbnb.model4, airbnb.model3)
+anova(airbnb.model5, airbnb.model4)
+anova(airbnb.model6, airbnb.model4)
+```
+
+
+```{R}
+summary(airbnb.model6)
+```
+
+
+1. \( \alpha_0 = 26.85711  \)
+2. \( \hat{\beta}_0 = -0.10423 \)
+3. \( \gamma_0 = 15.51002 \)
+4. \( \hat{\sigma} = 82.19  \)
+5. \( \hat{\sigma}_u = 32.14    \)
+6. \( p_{\hat{u}\hat{v}} = 0.007 \)
+7. \( p_{\hat{u}\hat{w}} = -0.977  \)
+8. \( p_{\hat{v}\hat{w}} = -0.063 \)
+   
+1. **Overall Mean Price (\(\alpha_0 = 26.85711\)):**
+   - Represents the estimated overall mean price for Airbnb listings in Chicago.
+
+2. **Effect of Reviews on Price:**
+   - For each additional unit increase in the number of reviews, there is an estimated mean decrease of 0.10423 in the Airbnb listing price.
+
+3. **Neighborhood Baseline Price (\(\gamma_0 = 15.51002\)):**
+   - Represents the estimated baseline price for Airbnb listings in the reference neighborhood.
+
+4. **Overall Variability in Price (\(\hat{\sigma} = 82.19\)):**
+   - Represents the estimated standard deviation in Airbnb listing prices across all neighborhoods.
+
+5. **Neighborhood Variability in Baseline Prices (\(\hat{\sigma}_u = 32.14\)):**
+   - Represents the estimated standard deviation of baseline prices for Airbnb listings among different neighborhoods.
+
+6. **Correlation Between Baseline Prices and Reviews:**
+   - For each 1-unit increase in the standard deviation of baseline prices among neighborhoods, there is a positive correlation of 0.007 with the standard deviation in the effect of reviews on listing prices.
+
+7. **Correlation Between Baseline Prices and Overall Variability:**
+   - For each 1-unit increase in the standard deviation of baseline prices among neighborhoods, there is a strong negative correlation of -0.977 with the overall variability in Airbnb listing prices.
+
+8. **Correlation Between Reviews Effect and Overall Variability:**
+   - For each 1-unit increase in the standard deviation of the effect of reviews on listing prices, there is a negative correlation of -0.063 with the overall variability in Airbnb listing prices.
