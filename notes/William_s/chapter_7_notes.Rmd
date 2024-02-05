@@ -1,0 +1,54 @@
+```{R}
+# Packages required for Chapter 7
+library(gridExtra)
+library(knitr)
+library(kableExtra)
+library(lme4)
+library(ICC)
+library(knitr)
+library(tidyverse)
+```
+
+
+
+Generates two sets of random variables: count_1a and count_1b, each 24 values.
+Both binomial distributions.
+```{R}
+pi_1a <- rep(0.5, 24)
+count_1a <- rbinom(24, 10, pi_1a)
+
+pi_1b <- rbeta(24,.5,.5)  
+count_1b <- rbinom(24, 10, pi_1b)  
+```
+
+
+
+count_2a is generated from a binomial distribution with 10 trials and success probabilities calculated based on a logistic function of the dose values, while count_2b is generated from a binomial distribution with success probabilities sampled from a beta distribution
+```{R}
+
+set.seed(1)
+
+dose <- c(rep(0,6),rep(1,6),rep(2,6),rep(3,6))
+
+pi_2a <- exp(-2+4/3*dose)/(1+exp(-2+4/3*dose))
+count_2a <- rbinom(24, 10, pi_2a)
+
+b <- 2
+a <- b*pi_2a / (1-pi_2a)
+pi_2b <- rbeta(24, a, b)
+count_2b <- rbinom(24, 10, pi_2b) 
+```
+
+
+Creates a linear model to find growth_yr1 from tubes
+```{R}
+tube_linear <- lm(growth_yr1 ~ tubes, data = treetubes_yr1)
+```
+
+
+Creates a multileveled model of the same except there is a second constent level.
+```{R}
+tube_multi1 <- lmer(growth_yr1 ~ tubes + (1|transect), 
+                    data = treetubes_yr1)
+```
+```

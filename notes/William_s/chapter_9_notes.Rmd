@@ -1,0 +1,111 @@
+```{R}
+# Packages required for Chapter 9
+library(GGally)
+library(data.table)
+library(Hmisc)
+library(mice)
+library(lattice)
+library(nlme)
+library(reshape2)
+library(MASS)
+library(mnormt)
+library(lme4)
+library(gridExtra) 
+library(knitr)
+library(kableExtra)
+library(broom)
+library(tidyverse)
+```
+
+
+Multileveled constent model for math average score.
+```{R}
+model.a <- lmer(MathAvgScore~ 1 + (1|schoolid), 
+                REML=T, data=chart.long)
+```
+
+
+multileveled model to find math average score with year08 in both levels as a predictor
+```{R}
+model.b <- lmer(MathAvgScore~ year08 + (year08|schoolid), 
+  REML=T, data=chart.long)
+```
+
+
+multileveled model to find math average score with yearc and yearc2 as predicors on the first level and the second level is constent.
+```{R}
+model.b2 <- lmer(MathAvgScore~ yearc + yearc2 + (1|schoolid), 
+  REML=T, data=chart.long)
+```
+
+
+
+multileveled model to find math average score with charter and year08 and an interaction between the two as predicors on the first level and the second level is found by year08.
+```{R}
+model.c <- lmer(MathAvgScore~ charter + year08 + 
+  charter:year08 + (year08|schoolid), 
+  REML=T, data=chart.long)
+```
+
+
+multileveled model to find math average score with charter, percent free lunch, year08 and an interaction between the two other predictors and year08 as predicors on the first level and the second level is found by year08.
+```{R}
+model.d2 <- lmer(MathAvgScore~ charter + SchPctFree + year08 + 
+  charter:year08 + SchPctFree:year08 + (year08|schoolid),
+  REML=T, data=chart.long)
+```
+
+
+drop in devience of model d2 and c.
+```{R}
+drop_in_dev <- anova(model.d2, model.c, test = "Chisq")
+
+```
+
+multileveled model to find math average score with charter, urban, percent free lunch, year08 and an interaction between the three other predictors and year08 as predictors on the first level and the second level is found by year08.
+```{R}
+model.f2 <- lmer(MathAvgScore ~ charter + urban + SchPctFree + 
+  SchPctSped + charter:year08 + urban:year08 + 
+  SchPctSped:year08 + year08 +
+  (year08|schoolid), REML=T, data=chart.long)
+```
+
+
+multileveled model to find math average score with charter, urban, percent free lunch, schpctsped, year08 and an interaction individually between charter,  urban, and schpctsped and year08 as predictors on the first level and the second level is found by year08.
+```{R}
+model.f0 <- lmer(MathAvgScore ~ charter + urban + SchPctFree + 
+  SchPctSped + charter:year08 + urban:year08 + 
+  SchPctSped:year08 + year08 +
+  (1|schoolid), REML=T, data=chart.long)
+```
+
+
+ simulates responses from a model, and then refits two models using the simulated responses. Then finds drop in devience.
+```{R}
+set.seed(3333)
+d <- drop(simulate(model.f0ml))
+m2 <-refit(model.f2ml, newresp=d)
+m1 <-refit(model.f0ml, newresp=d)
+drop_in_dev <- anova(m2, m1, test = "Chisq")
+```
+
+Runs a bootstrap anova between model f2ml and f0ml with the bootstrap at 1000.
+```{R}
+bootstrapAnova(mA=model.f2ml, m0=model.f0ml, B=1000)
+
+```
+
+
+Finds confidence interval of modelf2
+```{R}
+bootciF = confint(model.f2, method="boot", oldNames=F)
+```
+
+
+multileveled model to find math average score with charter, urban, percent free lunch, schpctsped, year08 and an interaction individually between charter,  urban, and schpctsped and year08 as predictors on the first level and the second level is constent and the third level is predicted by year08.
+```{r}
+model.f2a <- lmer(MathAvgScore ~ charter + urban + SchPctFree +
+  SchPctSped + charter:year08 + urban:year08 +
+  SchPctSped:year08 + year08 +
+  (1|schoolid) + (0+year08|schoolid), REML=T, data=chart.long)
+```

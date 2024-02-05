@@ -1,0 +1,74 @@
+```{R}
+library(MASS)
+library(gridExtra)  
+library(mnormt) 
+library(lme4) 
+library(knitr) 
+library(kableExtra)
+library(tidyverse)
+```
+
+
+Creates a linear model to find na from orch and large and an interaction between orch and large
+```{R}
+modelc0 <- lm(na ~ orch + large + orch:large, data = music)
+```
+
+
+creates a linear model to find na from large
+```{R}
+regr.id22 = lm(na ~ large, data = id22)
+```
+
+
+
+creates a multileveled constent model
+```{R}
+model.a <- lmer(na ~ 1 + (1 | id), REML = T, data = music)
+```
+
+
+Multileveld model with large on both levels as predictor for na
+```{R}
+model.b <- lmer(na ~ large +  (large | id), data = music)
+
+```
+
+
+
+Constent second level multilevel model to find na from orch, large, and a interaction between the two
+```{R}
+model.c2 <- lmer(na ~ orch + large + orch:large +
+  (1|id), data = music)
+```
+
+
+
+Model where na is being found from orch, mpnem, large, and interaction from orch and large, and an interaction from mpqnem and large on the first level and large on the second.
+```{R}
+model.d <- lmer(na ~ orch + mpqnem + large + orch:large + 
+  mpqnem:large + (large | id), data = music)
+```
+
+drop in devience test against model d and model c
+```{R}
+drop_in_dev <- anova(model.d, model.c, test = "Chisq")
+```
+
+
+Model where na is being found from orch, cmpnem, large, and interaction from orch and large, and an interaction from cmpqnem and large on the first level and large on the second.
+```{R}
+model.e <- lmer(na ~ orch + cmpqnem + large + orch:large + 
+  cmpqnem:large + (large | id), REML = T, data = music)
+```
+
+
+Model where na is being found from previous, students, juried, public, solo, orch, mpnem, and interaction from solo and mpqnem on the first level and previous, students, juried, public, and solo on the second.
+```{r}
+model.f <- lmer(na ~ previous + students + juried + 
+    public + solo + mpqpem + mpqab + orch + mpqnem + 
+    mpqnem:solo + (previous + students + juried + 
+    public + solo | id), REML = T, data = music)
+```
+
+

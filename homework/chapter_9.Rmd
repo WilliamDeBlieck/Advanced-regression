@@ -1,0 +1,493 @@
+```{r load_packages9, message = FALSE, warning = FALSE}
+# Packages required for Chapter 9
+library(GGally)
+library(data.table)
+library(mice)
+library(nlme)
+library(reshape2)
+library(MASS)
+library(mnormt)
+library(lme4)
+library(gridExtra) 
+library(knitr)
+library(kableExtra)
+library(broom)
+library(tidyverse)
+```
+
+
+6. __Charter schools.__ Differences exist in both sets of boxplots in Figure \@ref(fig:lon-box2).  What do these differences imply for multilevel modeling?
+<br>
+Charter school needs to be added to level 2 for intercept and slope
+
+7. What implications do the scatterplots in Figures \@ref(fig:lon-boxcatmat1) (b) and (c) have for multilevel modeling?  What implications does the boxplot in Figure \@ref(fig:lon-boxcatmat1) (a) have?
+<br>
+Percent free lunch needs to be added to the level 2 intercept. Charter school and percent free lunch correlate.
+
+9. Sketch a set of boxplots to indicate an obvious interaction between percent special education and percent non-white in modeling 2008 math scores. Where would this interaction appear in the multilevel model?
+```{R}
+set.seed(123)
+
+n <- 200
+data <- data.frame(
+  percent_non_white = rep(c("Low", "High"), each = n/2),
+  percent_special_ed = rep(c("Low", "High"), each = n/4),
+  math_scores = c(rnorm(n/4, mean = 70, sd = 5),
+                  rnorm(n/4, mean = 75, sd = 5),
+                  rnorm(n/4, mean = 65, sd = 5),
+                  rnorm(n/4, mean = 60, sd = 5))
+)
+
+ggplot(data, aes(x = percent_non_white, y = math_scores, fill = percent_special_ed)) +
+  geom_boxplot() +
+  labs(title = "Interaction between Percent Special Education and Percent Non-White",
+       x = "Percent Non-White",
+       y = "Math Scores",
+       fill = "Percent Special Education") +
+  theme_minimal()
+
+```
+
+There should be an interaction added in the level 2 intercept.
+
+12. In Section \@ref(modelb9), why don't we examine the pseudo R-squared value for Level Two?
+<br>
+The models are too different. One is a single equation and the other is two.
+
+
+1. __Teen alcohol use.__ @Curran1997 collected data on 82 adolescents at three time points starting at age 14 to assess factors that affect teen drinking behavior.  Key variables in the data set `alcohol.csv` (accessed via @Singer2003) are as follows:
+    - `id` = numerical identifier for subject
+    - `age` = 14, 15, or 16
+    - `coa` = 1 if the teen is a child of an alcoholic parent; 0 otherwise
+    - `male` = 1 if male; 0 if female
+    - `peer` = a measure of peer alcohol use, taken when each subject was 14.  This is the square root of the
+      sum of two 6-point items about the proportion of friends who drink occasionally or regularly.
+    - `alcuse` = the primary response.  Four items---(a) drank beer or wine, (b) drank hard liquor, (c) 5 or
+      more drinks in a row, and (d) got drunk---were each scored on an 8-point scale, from 0="not at all" to
+      7="every day".  Then `alcuse` is the square root of the sum of these four items. </ul>
+
+    Primary research questions included:  Do trajectories of alcohol use differ by parental alcoholism?  Do trajectories of alcohol use differ by peer alcohol use?
+
+
+```{R}
+teens <- read.csv("data/alcohol.csv")
+
+teens <- teens %>% 
+  mutate(
+    age14 = age - 14,
+    coa = factor(ifelse(coa == 1, "alcoholic parent", "non-alcoholic parents")),
+    sex = factor(ifelse(male == 1, "male", "female")),
+    binary_peer = factor(ifelse(peer > 0, "peer use","no peer use")))
+```
+    a. Identify Level One and Level Two predictors.
+    
+- **Level One**: age
+- **Level Two**: peer, coa, male
+    
+    
+    b. Perform a quick EDA.  What can you say about the shape of `alcuse`, and the relationship between `alcuse` and `coa`, `male`, and `peer`?  Appeal to plots and summary statistics in making your statements.
+    
+```{R}
+head(teens)
+
+ggplot(teens, aes(x = alcuse)) +
+  geom_histogram(bins = 4, fill="skyblue")
+
+max(row_number(teens))
+
+ggplot(teens, aes(x = peer, y= alcuse)) +
+  geom_point() +
+  geom_smooth(method = lm)
+
+ggplot(teens, aes(x = factor(age14), y = alcuse)) +  coord_flip() +
+  geom_boxplot() 
+
+ggplot(teens, aes(x = coa, y = alcuse)) + coord_flip() +
+  geom_boxplot() 
+
+ggplot(teens, aes(x = sex, y = alcuse)) + coord_flip() +
+  geom_boxplot()
+
+
+cor(teens$peer, teens$alcuse)
+```
+
+The difference in alcohol use in males and females is not large. Peer use and alcohol use is moderately positively correlated. 14 YO use less than 15 and 16 YO. Alcohol use is very right skewed. Those with achoholic parents tend to have a higher alcohol use.
+
+
+    
+    c. Generate a plot as in Figure \@ref(fig:lon-lat1) with alcohol use over time for all 82 subjects.  Comment.
+    
+    
+```{R}
+ggplot(teens, aes(x = age14, y = alcuse)) +
+  geom_point() +
+  geom_line() +
+  facet_wrap(~id, ncol = 15)
+```
+
+Those who start not drinking tend to stay not drinking. Overall trend in alcohol use is upwards as teens age.
+
+    
+    d. Generate three spaghetti plots with loess fits similar to Figure \@ref(fig:lon-spag3) (one for `coa`, one for `male`, and one after creating a binary variable from `peer`).  Comment on what you can conclude from each plot.
+    
+```{R}
+ggplot(teens, aes(x = age14, y = alcuse)) +
+  geom_line(aes(group = id)) +
+  facet_grid(~ coa) +
+  geom_smooth(aes(group = 1))
+
+ggplot(teens, aes(x = age14, y = alcuse)) +
+  geom_line(aes(group = id)) +
+  facet_grid(~ sex) +
+  geom_smooth(aes(group = 1))
+
+ggplot(teens, aes(x = age14, y = alcuse)) +
+  geom_line(aes(group = id)) +
+  facet_grid(~ binary_peer) +
+  geom_smooth(aes(group = 1))
+
+```
+
+Those who have alcoholic parents have a higher intercept of alcohol use. Those who are male drink more at age 16. Those with peers who use have a higher intercept of alcohol use.
+    
+    e. Fit a linear trend to the data from each of the 82 subjects using `age` as the time variable.  Generate histograms as in Figure \@ref(fig:lon-histmat1) showing the results of these 82 linear regression lines, and generate pairs of boxplots as in Figure \@ref(fig:lon-box2) for `coa` and `male`.  No commentary necessary.  [Hint: to produce Figure \@ref(fig:lon-box2), you will need a data frame with one observation per subject.]
+    
+    
+```{R}
+lm_info <- data.frame()
+
+for (id_val in unique(teens$id)) {
+  
+  subset_data <- subset(teens, id == id_val)
+  
+  fit <- lm(alcuse ~ age, data = subset_data)
+  
+  coefficients <- coef(fit)
+  std_errors <- summary(fit)$coefficients[, "Std. Error"]
+  
+  tstar <- qt(0.975, df.residual(fit))
+  intlb <- coefficients[1] - tstar * std_errors[1]
+  intub <- coefficients[1] + tstar * std_errors[1]
+  ratelb <- coefficients[2] - tstar * std_errors[2]
+  rateub <- coefficients[2] + tstar * std_errors[2]
+  
+  r_squared <- summary(fit)$r.squared
+  df_residual <- length(residuals(fit)) - length(coefficients)
+  
+  result_row <- data.frame(
+    id = id_val,
+    r.squared = r_squared,
+    df.residual = df_residual,
+    rate = coefficients[2],
+    int = coefficients[1],
+    se_rate = std_errors[2],
+    se_int = std_errors[1],
+    tstar = tstar,
+    intlb = intlb,
+    intub = intub,
+    ratelb = ratelb,
+    rateub = rateub
+  )
+  
+  lm_info <- rbind(lm_info, result_row)
+}
+
+se_info <- data.frame()
+
+glance_info <- data.frame()
+
+for (id_val in unique(teens$id)) {
+  
+  subset_data <- subset(teens, id == id_val)
+  
+  fit <- lm(alcuse ~ age, data = subset_data)
+  
+  se <- summary(fit, effects = "fixed")$coefficients[, "Std. Error"]
+  
+  se_row <- data.frame(
+    id = id_val,
+    se_rate = as.numeric(se[2]),
+    se_int = as.numeric(se[1])
+  )
+  
+  se_info <- rbind(se_info, se_row)
+  
+  r_squared <- summary(fit)$r.squared
+  df_residual <- length(residuals(fit)) - length(coef(fit))
+  
+  glance_row <- data.frame(
+    id = id_val,
+    r.squared = r_squared,
+    df.residual = df_residual
+  )
+  
+  glance_info <- rbind(glance_info, glance_row)
+}
+
+lm_info <- merge(lm_info, se_info, by = "id", suffixes = c(".lm", ".se"))
+
+lm_info <- merge(lm_info, glance_info, by = "id", suffixes = c(".lm", ".glance"))
+
+lm_info$df.residual.lm <- as.numeric(lm_info$df.residual.lm)
+
+lm_info$tstar <- qt(0.975, lm_info$df.residual.lm)
+
+lm_info$intlb <- lm_info$int - lm_info$tstar * lm_info$se_int.se
+lm_info$intub <- lm_info$int + lm_info$tstar * lm_info$se_int.se
+lm_info$ratelb <- lm_info$rate - lm_info$tstar * lm_info$se_rate.se
+lm_info$rateub <- lm_info$rate + lm_info$tstar * lm_info$se_rate.se
+
+int.hist1 <- ggplot(lm_info) +
+  geom_histogram(aes(x = int), bins = 8, fill = "skyblue") +
+  ggtitle("Histogram of Intercept")
+
+rate.hist1 <- ggplot(lm_info) +
+  geom_histogram(aes(x = rate), bins = 8, fill = "skyblue") +
+  ggtitle("Histogram of Slope")
+
+rsq.hist1 <- ggplot(lm_info) +
+  geom_histogram(aes(x = r.squared.lm), bins = 8, fill = "skyblue") +
+  ggtitle("Histogram of R-squared")
+
+lon.histmat1 <- grid.arrange(int.hist1, rate.hist1, rsq.hist1, ncol = 2)
+
+teens.transform <- teens %>%
+  select(-age14) %>%
+  spread(key = age, value = alcuse)
+
+teens.transform <- merge(teens.transform, lm_info[, c("id", "int", "rate")], by = "id")
+
+int.box <- ggplot(teens.transform) +
+  geom_boxplot(aes(x = coa, y = int)) +
+  ylab("Intercepts") + xlab("Alcoholic Parent")
+
+rate.box <- ggplot(teens.transform) +
+  geom_boxplot(aes(x = coa, y = rate)) +
+  ylab("Slopes") + xlab("Alcoholic Parent")
+
+lon.box <- grid.arrange(int.box, rate.box, ncol = 2)
+```
+
+    f. Repeat (e) using centered age (`age14 = age - 14`) as the time variable.  Also generate a pair of scatterplots as in Figure \@ref(fig:lon-boxcatmat1) for peer alcohol use.  Comment on trends you observe in these plots.  [Hint: after forming `age14`, append it to your current data frame.]
+
+```{R}
+lm_info <- data.frame()
+
+for (id_val in unique(teens$id)) {
+  
+  subset_data <- subset(teens, id == id_val)
+  
+  fit <- lm(alcuse ~ age14, data = subset_data)
+  
+  coefficients <- coef(fit)
+  std_errors <- summary(fit)$coefficients[, "Std. Error"]
+  
+  tstar <- qt(0.975, df.residual(fit))
+  intlb <- coefficients[1] - tstar * std_errors[1]
+  intub <- coefficients[1] + tstar * std_errors[1]
+  ratelb <- coefficients[2] - tstar * std_errors[2]
+  rateub <- coefficients[2] + tstar * std_errors[2]
+  
+  r_squared <- summary(fit)$r.squared
+  df_residual <- length(residuals(fit)) - length(coefficients)
+  
+  result_row <- data.frame(
+    id = id_val,
+    r.squared = r_squared,
+    df.residual = df_residual,
+    rate = coefficients[2],
+    int = coefficients[1],
+    se_rate = std_errors[2],
+    se_int = std_errors[1],
+    tstar = tstar,
+    intlb = intlb,
+    intub = intub,
+    ratelb = ratelb,
+    rateub = rateub
+  )
+  
+  lm_info <- rbind(lm_info, result_row)
+}
+
+se_info <- data.frame()
+
+glance_info <- data.frame()
+
+for (id_val in unique(teens$id)) {
+  
+  subset_data <- subset(teens, id == id_val)
+  
+  fit <- lm(alcuse ~ age, data = subset_data)
+  
+  se <- summary(fit, effects = "fixed")$coefficients[, "Std. Error"]
+  
+  se_row <- data.frame(
+    id = id_val,
+    se_rate = as.numeric(se[2]),
+    se_int = as.numeric(se[1])
+  )
+  
+  se_info <- rbind(se_info, se_row)
+  
+  r_squared <- summary(fit)$r.squared
+  df_residual <- length(residuals(fit)) - length(coef(fit))
+  
+  glance_row <- data.frame(
+    id = id_val,
+    r.squared = r_squared,
+    df.residual = df_residual
+  )
+  
+  glance_info <- rbind(glance_info, glance_row)
+}
+
+lm_info <- merge(lm_info, se_info, by = "id", suffixes = c(".lm", ".se"))
+
+lm_info <- merge(lm_info, glance_info, by = "id", suffixes = c(".lm", ".glance"))
+
+lm_info$df.residual.lm <- as.numeric(lm_info$df.residual.lm)
+
+lm_info$tstar <- qt(0.975, lm_info$df.residual.lm)
+
+lm_info$intlb <- lm_info$int - lm_info$tstar * lm_info$se_int.se
+lm_info$intub <- lm_info$int + lm_info$tstar * lm_info$se_int.se
+lm_info$ratelb <- lm_info$rate - lm_info$tstar * lm_info$se_rate.se
+lm_info$rateub <- lm_info$rate + lm_info$tstar * lm_info$se_rate.se
+
+int.hist1 <- ggplot(lm_info) +
+  geom_histogram(aes(x = int), bins = 8, fill = "skyblue") +
+  ggtitle("Histogram of Intercept")
+
+rate.hist1 <- ggplot(lm_info) +
+  geom_histogram(aes(x = rate), bins = 8, fill = "skyblue") +
+  ggtitle("Histogram of Slope")
+
+rsq.hist1 <- ggplot(lm_info) +
+  geom_histogram(aes(x = r.squared.lm), bins = 8, fill = "skyblue") +
+  ggtitle("Histogram of R-squared")
+
+lon.histmat1 <- grid.arrange(int.hist1, rate.hist1, rsq.hist1, ncol = 2)
+
+teens.transform <- teens %>%
+  select(-age) %>%
+  spread(key = age14, value = alcuse)
+
+teens.transform <- merge(teens.transform, lm_info[, c("id", "int", "rate")], by = "id")
+
+int.box <- ggplot(teens.transform) +
+  geom_boxplot(aes(x = coa, y = int)) +
+  ylab("Intercepts") + xlab("Alcoholic Parent")
+
+rate.box <- ggplot(teens.transform) +
+  geom_boxplot(aes(x = coa, y = rate)) +
+  ylab("Slopes") + xlab("Alcoholic Parent")
+
+lon.box <- grid.arrange(int.box, rate.box, ncol = 2)
+
+int.scat <- ggplot(teens.transform, aes(x = peer, y = int)) +
+  geom_jitter() +
+  geom_smooth(method = lm, se = FALSE) +
+  ylab("Peers using alcohol")
+
+rate.scat <- ggplot(teens.transform, aes(x = peer, y = rate)) +
+  geom_jitter() +
+  geom_smooth(method = lm, se = FALSE) +
+  ylab("Peers using alcohol")
+
+
+lon.scat <- grid.arrange(int.scat, rate.scat, ncol=2)
+```
+
+Children with alcoholic parents have same slope/rate of change but different alcohol use starting points/intercepts at 14.
+
+
+    g. Discuss similarities and differences between (e) and (f).  Why does using `age14` as the time variable make more sense in this example?
+The only thing that changes are the intercepts. This makes more sense to use as it makes the intercepts positive instead of negative as negative alcohol use does not make sense.
+
+    h. (Model A) Run an unconditional means model.  Report and interpret the intraclass correlation coefficient.
+
+```{R}
+teens.model_a <- lmer(alcuse ~ 1 + (1|id), REML=T, data=teens)
+summary(teens.model_a)
+```
+
+\[
+\hat{\rho} = \frac{0.573}{{0.573 + 0.561}} = 0.505
+\]
+
+The variability in alcohol use attributable to differences among
+subjects is 50.5%.
+
+
+    i. (Model B) Run an unconditional growth model with `age14` as the time variable at Level One.  Report and interpret estimated fixed effects, using proper notation.  Also report and interpret a pseudo R-squared value.
+
+```{R}
+teens.model_b <- lmer(alcuse ~ age14 + (age14|id), REML=T, data=teens)
+summary(teens.model_b)
+```
+
+1. \( \hat{\alpha}_0 = 0.65, \hat{\beta}_0 = 0.27 \)
+2. \( {\text{Pseudo}R^2} = \frac{0.562 - 0.337}{0.561} = 0.4 \)
+
+
+40% of the teen variability in alcohol usage can be explained by linearity.
+
+The mean alcohol use scale score for 14 YO is 0.65
+
+The mean yearly rate of change in alcohol use in teens scale score is 0.27
+
+
+    j. (Model C) Build upon the unconditional growth model by adding the effects of having an alcoholic parent and peer alcohol use in both Level Two equations.  Report and interpret all estimated fixed effects, using proper notation.
+
+
+```{R}
+teens.model_c <- lmer(alcuse ~ coa + peer + age14 + coa:age14 +
+peer:age14 + (age14|id), REML=T, data=teens)
+summary(teens.model_c)
+```
+
+\[ \hat{\alpha}_0 = -0.32, \quad \hat{\alpha}_1 = 0.58, \quad \hat{\alpha}_2 = 0.69, \]
+\[ \hat{\beta}_0 = 0.43, \quad \hat{\beta}_1 = -0.014, \quad \hat{\beta}_2 = -0.150 \]
+
+
+- \( \alpha_0 = -0.32 \) represents the estimated mean alcohol use scale score for 14-year-olds who are not children of alcoholics and whose peers do not use alcohol.
+
+- \( \alpha_1 = 0.58 \) represents that children of alcoholics have a mean alcohol use score 0.58 points higher than children of non-alcoholics at age 14, after accounting for peer alcohol use.
+
+- \( \alpha_2 = 0.69 \) represents that for each one-point increase in peer alcohol use, there is an associated mean increase of 0.69 in a 14-year-old's alcohol use scale score, after controlling for parental alcoholism.
+
+- \( \hat{\beta}_0 = 0.43 \) represents that teens who are not children of alcoholics and whose peers do not use alcohol experience an average annual increase of 0.43 points in their alcohol use scale score between the ages of 14 and 16.
+
+- \( \hat{\beta}_1 = -0.014 \) represents that teens who are children of alcoholics have a yearly increase in alcohol use that is 0.014 points smaller than children of non-alcoholics, after accounting for peer alcohol use.
+
+- \( \hat{\beta}_2 = -0.150 \) represents that for each 1-unit increase on the peer alcohol use scale, teens experience a mean yearly increase in alcohol use that is 0.150 points smaller, after controlling for parental alcoholism.
+
+    k. (Model D) Remove the child of an alcoholic indicator variable as a predictor of slope in Model C (it will still be a predictor of intercept).  Write out Model D as both a two-level and a composite model using proper notation (including error distributions); how many parameters (fixed effects and variance components) must be estimated?  Compare Model D to Model C using an appropriate method and state a conclusion.
+
+
+```{R}
+teens.model_d <- lmer(alcuse ~ coa + peer + age14 + peer:age14 +
+(age14|id), REML=T, data=teens)
+summary(teens.model_d)
+
+anova(teens.model_c,teens.model_d)
+```
+
+
+Model D has 9 parameters to estimate:
+
+- Level One:
+  \[ a_i + b_i \cdot \text{age14}_{ij} \]
+
+- Level Two:
+  \[\alpha_0 + \alpha_1 \cdot \text{coa}_i + \alpha_2 \cdot \text{peer}_i + u_i \]
+  \[\beta_0 + \beta_1 \cdot \text{peer}_i + v_i \]
+
+- Composite model:
+  \[\alpha_0 + \alpha_1 \cdot \text{coa}_i + \alpha_2 \cdot \text{peer}_i + \beta_0 \cdot \text{age14}_{ij} + \beta_1 \cdot \text{peer}_i \cdot \text{age14}_{ij} + u_i + v_i \cdot \text{age14}_{ij} \]
+
+\[ 
+N \left( \begin{bmatrix} 0 \\ 0 \end{bmatrix} , \begin{bmatrix} \sigma^2_u & \sigma_{vu} \\ \sigma_{uv} & \sigma^2_v \end{bmatrix} \right) 
+\]
+With a P value of 0.9105. We cannot reject the null hypothesis that model d is not worse than model c.
