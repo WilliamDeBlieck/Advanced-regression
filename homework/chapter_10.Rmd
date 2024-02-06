@@ -1,0 +1,218 @@
+```{r load_packages10, message = FALSE, warning = FALSE}
+# Packages required for Chapter 10
+library(knitr)
+library(gridExtra)
+library(GGally)
+library(mice)
+library(nlme)
+library(lme4)
+library(mnormt)
+library(boot)
+library(HLMdiag)
+library(kableExtra)
+library(pander)
+library(tidyverse)
+```
+
+
+1. __Tree tubes.__ A student research team at St. Olaf College contributed to the efforts of biologist Dr. Kathy Shea to investigate a rich data set concerning forestation in the surrounding land [@Eisinger2011].  Tubes were placed on trees in some locations or *transects* but not in others. Interest centers on whether tree growth is affected by the presence of tubes. The data is currently stored in long format in `treetube.csv`. Each row represents one tree in a given year. Key variables include:  
+    - `TRANSECT`: The id of the transect housing the tree
+    - `TUBEX`: 1 if the tree had a tube, 0 if not
+    - `ID`: The tree's unique id
+    - `SPECIES`: The tree's species
+    - `YEAR`: Year of the observation
+    - `HEIGHT`: The tree's height in meters
+    </ul>
+
+    a. Perform basic exploratory data analysis.  For example, which variables are correlated with the heights of the trees?
+    
+```{R}
+trees <- read_csv("data/treetube.csv")
+trees <- mutate(trees, YEAR1990 = YEAR - 1990)
+```
+
+
+```{R}
+str(trees)
+
+summary(trees)
+
+correlation_matrix <- cor(trees[, c("TUBEX", "YEAR", "HEIGHT")])
+print(correlation_matrix)
+
+ggplot(trees, aes(x = YEAR, y = HEIGHT)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Height of Trees over the Years",
+       x = "Year",
+       y = "Height (m)")
+
+ggplot(trees, aes(x = factor(TUBEX), y = HEIGHT)) +
+  geom_boxplot() +
+  labs(title = "Height of Trees with and without Tubes",
+       x = "Tube presence (0 = No, 1 = Yes)",
+       y = "Height (m)")
+
+ggplot(trees, aes(x = SPECIES, y = HEIGHT)) +
+  geom_boxplot() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Height of Trees by Species",
+       x = "Species",
+       y = "Height (m)")
+```
+Height and year seem to be heavily correlated. Species seems to make a difference as well. Tubex seems to make little difference.
+    
+    b. Explore patterns of missing data. Consider looking for patterns between transects.  If you found any patterns of missing data, how might this affect your modeling?
+    
+```{R}
+table(trees$TRANSECT, trees$TUBEX)
+table(trees$TRANSECT, trees$YEAR)
+```
+
+Transect 15,17, and 18 all have years that were not measured. This could effect our modeling by skewing the data.
+
+    c. We wish to fit a three-level model for a tree's height. What would be observational units at Level Three?  At Level Two? At Level One? What are our Level Three variables? Level Two variables? Level One variables?
+
+Observational units
+- **Level 1**: TUBEX
+- **Level 1**: SPECIES
+- **Level 1**: YEAR
+
+Same variables as the observational units.
+    
+    d. Generate spaghetti plots showing how height varies over time for trees which had tubes and for trees which did not have tubes. What do you notice?
+    
+```{R}
+ggplot(trees, aes(x = YEAR, y = HEIGHT)) +
+  geom_line(aes(group = ID)) +
+  facet_grid(~ TUBEX) +
+  geom_smooth(aes(group = 1))
+```
+
+We can see that trees that did not have tubes grew faster than tree who did.
+
+
+    e. Fit Model A, a three-level, unconditional means model for height. Write out the model at levels three, two, and one, as well as the composite model.
+```{R}   
+trees.model_a <- lmer(HEIGHT ~ 1 + (1|ID) + (1|TRANSECT),
+  REML=T, data=trees)
+  summary(trees.model_a)
+```
+
+- **level one**: 
+\[ Y_{ijk} = a_{ij} + \varepsilon_{ijk} \quad\]
+
+- **level two**: 
+\[ a_{ij} = a_i + u_{ij} \quad\]
+
+- **level three**: 
+\[ a_i = 2.233 + \tilde{u}_i \quad \]
+
+- **composite model**: 
+\[ Y_{ijk} = 2.233 + \tilde{u}_i + u_{ij} + \varepsilon_{ijk} \]
+
+
+
+    f. Create a new variable, `TIME`, which represents the number of years since 1990. Use this to fit Model B, an unconditonal growth model for height. Write out this model at levels three, two, and one. What is the correlation of random effects at level two? What does this mean? (Section \@ref(sec:boundary) may help.)
+    
+    
+```{R}
+trees.model_b <- lmer(HEIGHT ~ YEAR1990 + (YEAR1990|ID) + (YEAR1990|TRANSECT),
+REML = T, data = trees)
+summary(trees.model_b)
+```
+
+At level one: 
+\[ Y_{ijk} = a_{ij} + b_{ij} \text{TIME} + \varepsilon_{ijk} \quad \]
+
+At level two: 
+\[ a_{ij} = a_i + u_{ij}, \quad b_{ij} = b_i + v_{ij} \]
+\[ \sim N \left( \begin{bmatrix} 0 \\ 0 \end{bmatrix} , \begin{bmatrix} 0.332 & -0.052 \\ 0.162 & 0.162 \end{bmatrix} \right) \]
+
+- **level three**: 
+\[ a_i = -0.16 + \tilde{u}_i, \quad b_i = 0.30 + \tilde{v}_i \]
+\[\sim N \left( \begin{bmatrix} 0 \\ 0 \end{bmatrix} , \begin{bmatrix} 0.202 & -0.011 \\ 0.062 & 0.062 \end{bmatrix} \right) \]
+
+There is a correlation at level 2 of -.99. This means that the model was fit on the boundary.
+
+    g. In response to part (f), fit a new unconditional growth model (Model C) with $\rho_{uv} = 0$ and $\rho_{\hat{u}\hat{v}} = 0$ (uncorrelated random effects at levels two and three). Write out the model at levels two and three.
+    
+```{R}
+trees.model_c <- lmer(HEIGHT ~ YEAR1990 + (1|ID) + (0+YEAR1990|ID) +
+(1|TRANSECT) + (0+YEAR1990|TRANSECT), REML = T, data = trees)
+summary(trees.model_c)
+```
+- **level two**:
+\[ a_{ij} = a_i + u_{ij} \]
+\[ b_{ij} = b_i + v_{ij} \]
+
+
+- **level three**:
+\[ a_i = -0.16 + \tilde{u}_i \]
+\[ b_i = 0.30 + \tilde{v}_i \]
+
+
+
+    h. If we wanted to compare Model B and Model C, it would not be appropriate to use a likelihood ratio test. Why is this?
+
+<br>
+The variance components would artificially inflate the p-value therefor a LRT is not appropriate.
+
+    i. Use the parametric bootstrap to compare Model B and Model C. Which model does the test favor?
+    
+```{R, warning = F}
+#TAKES FOREVER TO RUN
+# CODE FROM BOOK GITHUB
+# https://github.com/proback/BeyondMLR/blob/master/10-Multilevel-Data-With-More-Than-Two-Levels.Rmd
+bootstrapAnova <- function(mA, m0, B=1000){
+  oneBootstrap <- function(m0, mA){
+    d <- drop(simulate(m0))
+    m2 <-refit(mA, newresp=d)
+    m1 <-refit(m0, newresp=d)
+    return(anova(m2,m1)$Chisq[2])
+  }  
+  nulldist <- replicate(B, oneBootstrap(m0, mA))
+  ret <- anova(mA, m0)
+  ret$"Pr(>Chisq)"[2] <- mean(ret$Chisq[2] < nulldist)
+  names(ret)[8] <- "Pr_boot(>Chisq)"
+  attr(ret, "heading") <- c(attr(ret, "heading")[1], 
+    paste("Parametric bootstrap with", B,"samples."),
+    attr(ret, "heading")[-1])
+  attr(ret, "nulldist") <- nulldist
+  return(ret)
+}
+
+
+trees.bootstrap.model_b_model_c <- bootstrapAnova(mA=trees.model_b
+                                                  , m0=trees.model_c,
+B=1000)
+trees.bootstrap.model_b_model_c
+```
+
+With a p-value of 0 (I guess it's too small for the computer) we can reject the null hypothesis that model_b is not better than model_c.
+
+    j. Regardless of your answer to (i), we will build off of Model C for the rest of the analysis. With that in mind, test the hypothesis that trees' growth rates are affected by tubes by adding an interaction between `TUBEX` and `TIME` (Model D). Interpret the fitted estimate of this interaction.
+    
+```{R}
+trees.model_d <- lmer(HEIGHT ~ YEAR1990 + YEAR1990:TUBEX + (1|ID) +
+(0+YEAR1990|ID) + (1|TRANSECT) + (0+YEAR1990|TRANSECT),
+REML = T, data = trees)
+summary(trees.model_d)
+```
+
+
+On average the yearly height increases by 0.056 meters per year lower among
+trees with tubes than trees with out tubes.
+<br>
+The average yearly increase in height in trees without tubes is .316 meters.
+<br>
+The average yearly increase in height in trees with tubes is .260 meters.
+
+    
+    k. Perform a likelihood ratio test comparing Model C and Model D. Interpret the results of this test in the context of this study.
+    
+```{R}
+anova(trees.model_d, trees.model_c)
+```
+With a p value of .266 we cannot reject the null hypothesis that model_d is not better than model_c. This means that we cannot say if  having a tube affects initial height or rate of change of height.
+
