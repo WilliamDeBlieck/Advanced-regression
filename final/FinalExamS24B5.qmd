@@ -1,0 +1,43 @@
+---
+title: "Final Exam"
+subtitle: "Advanced Regression"
+subsubtitle: "Spring 2024 B5"
+subsubsubtitle: "Due Wednesday February 7th at 3pm"
+---
+
+##### Rules
+- Any use of the internet should be well documented with citations and URLs beyond our online book and the pages following the links of the dataset description. 
+- Submit via pushing to course Github by due date. If issues arise, email.
+- Do not discuss with any other people, AI (Chat GPT), or post-able forums
+
+##### Grading
+Similar to the first exam I am looking for a broad application of the methods available and a thorough analysis. Your final submission should be well formatted and the html should be report-like with enough explanation to have it be understandable without code. 
+
+### Logistic Regression
+
+Since 1991, David Arseneault, men's basketball coach of Grinnell College, has developed a unique, fast-paced style of basketball that he calls "the system." In 1997 Arseneault published a book entitled The Running Game: A Formula for Success in which he outlines the keys to winning basketball games utilizing his fast-paced strategy. In it, Arseneault argues that: (1) making opponents take 150 trips down the court, (2) taking 94 shots (50% of those from behind the three-point arc), (3) rebounding 33% of offensive missed shots, and (4) forcing 32 turnovers would ultimately result in a win. It is these four statistical goals that comprise Arseneault's "keys to success." The dataset **Hoops** comes from the 147 games the team played within its athletics conference between the 1997--1998 season through the 2005--2006 season. 
+
+Use these data to investigate the validity Coach Arseneault's "keys to success" for winning games in the system. Then use the variables available to, if possible, improve on his keys. Write a report of your findings. The variables are:
+
+![](basketball_var.PNG){fig-align="left"}
+
+### Multi-level Modeling
+
+Goal: Model exam scores of the 65 schools in Inner  London. 
+- Conduct an EDA.
+- Using your EDA, discuss the necessity (or lack-there-of) of interaction terms and a multilevel model
+- Find the best possible model, from techniques covered in this class or prior, to model the exam scores.
+- Compare your best model that the one in the publication. Which is better? Why? Consider multiple criterion. 
+- Make sure to interpret one coefficient from each level of the following: intercepts at both levels, a slope of a categorical at both levels, a slope of a quantitative at both levels, at least 1 interaction term at one of the two levels, if they are in the model .
+
+
+```{r}
+#install.packages('mlmRev')
+library(mlmRev)
+?Exam
+exams<- Exam
+
+```
+
+
+
