@@ -13,6 +13,24 @@ subsubsubtitle: "Due Wednesday February 7th at 3pm"
 ##### Grading
 Similar to the first exam I am looking for a broad application of the methods available and a thorough analysis. Your final submission should be well formatted and the html should be report-like with enough explanation to have it be understandable without code. 
 
+```{r load_packages10, message = FALSE, warning = FALSE}
+# Packages required for Chapter 10
+library(knitr)
+library(gridExtra)
+library(GGally)
+library(mice)
+library(nlme)
+library(lme4)
+library(mnormt)
+library(boot)
+library(HLMdiag)
+library(kableExtra)
+library(pander)
+library(tidyverse)
+library(lmtest)
+```
+
+
 ### Logistic Regression
 
 Since 1991, David Arseneault, men's basketball coach of Grinnell College, has developed a unique, fast-paced style of basketball that he calls "the system." In 1997 Arseneault published a book entitled The Running Game: A Formula for Success in which he outlines the keys to winning basketball games utilizing his fast-paced strategy. In it, Arseneault argues that: (1) making opponents take 150 trips down the court, (2) taking 94 shots (50% of those from behind the three-point arc), (3) rebounding 33% of offensive missed shots, and (4) forcing 32 turnovers would ultimately result in a win. It is these four statistical goals that comprise Arseneault's "keys to success." The dataset **Hoops** comes from the 147 games the team played within its athletics conference between the 1997--1998 season through the 2005--2006 season. 
@@ -20,6 +38,215 @@ Since 1991, David Arseneault, men's basketball coach of Grinnell College, has de
 Use these data to investigate the validity Coach Arseneault's "keys to success" for winning games in the system. Then use the variables available to, if possible, improve on his keys. Write a report of your findings. The variables are:
 
 ![](basketball_var.PNG){fig-align="left"}
+
+
+```{R}
+hoops <- read_csv("hoops.csv")
+head(hoops)
+hoops <- hoops %>%
+  rename(fourtypoints = "40Point",
+         thirtypoints = "30Point")
+
+hoops <- hoops %>% mutate(Home = factor(ifelse(Home == 1,"home","away")),
+                          fourtypoints = factor(ifelse(fourtypoints == 1, "yes","no")),
+                          thirtypoints = factor(ifelse(thirtypoints == 1, "yes","no")),
+                          WinLoss = factor(ifelse(WinLoss == 1, "win","loss"))
+                          )
+
+head(hoops)
+colnames(hoops)
+```
+
+
+```{R}
+quantitative_plot <- function(x, y, main_title, x_label, y_label) {
+  cdplot(x, y, main = main_title, xlab = x_label, ylab = y_label)
+    boxplot(x ~ y, main = paste("Boxplot of", x_label, "by", y_label), xlab = y_label, ylab = x_label)
+}
+
+categorical_plot <- function(data, x_var, fill_var, title, x_label, y_label, fill_colors) {
+  ggplot(data, aes_string(x = x_var, fill = fill_var)) +
+    geom_bar(position = "fill") +
+    labs(title = title, x = x_label, y = y_label) +
+    scale_fill_manual(values = fill_colors)
+}
+
+quantitative_plot_all <- function(data, y_var) {
+  for (var in names(data)) {
+    if (is.numeric(data[[var]]) && var != y_var) {
+      quantitative_plot(data[[var]], data[[y_var]], paste("CD Plot of", var, "by", y_var), var, y_var)
+    }
+  }
+}
+
+categorical_plot_all <- function(data, fill_var, title, x_label, y_label, fill_colors) {
+  for (var in names(data)) {
+    if (is.factor(data[[var]]) && var != fill_var) {
+      categorical_plot(data, var, fill_var, title, x_label, y_label, fill_colors)
+    }
+  }
+}
+
+quantitative_plot_all(hoops, "WinLoss")
+
+categorical_plot_all(hoops, "WinLoss", "Segmented Bar Chart of Home by WinLoss", "WinLoss", "Proportion", c("home" = "lightgreen", "away" = "darkgreen"))
+
+
+cdplot(hoops$OppAtt, hoops$WinLoss, main = "CD Plot of OppATT by WinLoss", xlab = "OppAtt", ylab = "WinLoss")
+
+boxplot(OppAtt ~ WinLoss, data = hoops, main = "Boxplot of OppAtt by WinLoss", xlab = "WinLoss", ylab = "OppAtt")
+
+
+ggplot(hoops, aes(x = WinLoss, fill = Home)) +
+  geom_bar(position = "fill") +
+  labs(title = "Segmented Bar Chart of Home by WinLoss", x = "WinLoss", y = "Proportion") +
+  scale_fill_manual(values = c("home" = "lightgreen", "away" = "darkgreen"))
+
+
+cor_matrix <- cor(hoops[sapply(hoops, is.numeric)])
+
+print(cor_matrix)
+
+library(corrplot)
+
+quantitative_vars <- hoops[, sapply(hoops, is.numeric)]
+
+correlation_matrix <- cor(quantitative_vars)
+
+corrplot(correlation_matrix, method = "circle", type = "upper", order = "hclust", tl.col = "black", tl.srt = 45, addrect = 4)
+
+```
+1. OppAtt: it seems from CdPlot as OppAtt gets larger so too does the proportion of losses. 1. Boxplot shows win higher in all quantiles.
+1. GrAtt: it seems from CdPlot as GrAtt gets larger at start so too does the proportion of losses then it goes back down then back up again. Boxplot shows more varied responce.
+1. Gr3Att:  it seems from CdPlot as Gr3Att gets larger at start so too does the proportion of losses then it goes back down then back up again. The box plot shows lower median for wins.
+1. GrFt: The cdplot shows as it gets higher so too does win proportion. Boxplot shows much higher numbers for wins.
+1. OppFt: Opposite of GrFt.
+1. GrRB: Same as GRFt.
+1. OppOr: Cdplot is wavy and not consistent in trend. Boxplot shows little difference.
+1. OppDR: large spike at start and dip at 47 in cdplot. Boxplot shows much lower median.
+1. GrAss: Same as GrFT
+1. OppTo: Increases a lot in the start then dips in proportion to wins around 40 in cdplot. Boxplot shows much higher quantiles for win.
+1. GrTo: Opposite of GrFt
+1. GrBlocks: Large spike in proportion around 4, fall in 8 and then large increase in cdplot. boxplot shows much higher median.
+1. GrSteal: Cdplot shows Large jump around 10 then very small increase up to 25 then large increase in cdplot. In boxplot slightly higher median.
+
+
+Correlated vars:
+- GrAtt3, GrAtt & OppDr, GrOR, GrRB, GRPoint, OppAtt
+- Grsteal & OpFt
+- GrRB & GrPoint, OppPoint, GrFT, PtDiff, GrAss,
+
+
+Possible vars for model:
+OppAtt, GrFT, OppFT, OppDR, GrAss, OppTo, GrTo, Home
+
+```{R, warning = F}
+library(caret)
+
+fit_and_test_interaction <- function(variables, data) {
+  formula <- as.formula(paste("WinLoss ~", variables[1], "+", variables[2]))
+  model <- glm(formula, data = data, family = "binomial")
+  
+  formula_interaction <- as.formula(paste("WinLoss ~", variables[1], "*", variables[2]))
+  model_interaction <- glm(formula_interaction, data = data, family = "binomial")
+  
+  min_obs <- min(nrow(data), nrow(model_interaction$model))
+  data <- data[1:min_obs, ]
+  model <- update(model, data = data)
+  model_interaction <- update(model_interaction, data = data)
+  
+  lr_test <- lrtest(model_interaction, model)
+  
+  return(list(variables = variables, lr_test = lr_test))
+}
+
+variables <- combn(names(hoops)[1:(ncol(hoops)-1)], 2, simplify = FALSE)
+
+interaction_tests <- lapply(variables, fit_and_test_interaction, data = hoops)
+
+significant_interactions <- interaction_tests[sapply(interaction_tests, function(x) x$lr_test$"Pr(>Chisq)" < 0.05)]
+for (i in 1:length(significant_interactions)) {
+  vars <- significant_interactions[[i]]$variables
+  lr_test <- significant_interactions[[i]]$lr_test
+  if(0&!is.null(lr_test)){
+    print(lr_test)
+  }
+}
+
+```
+No significant interactions found
+
+
+```{R}
+
+hoops.model_a <- glm(WinLoss ~ OppAtt + Home + GrFT + OppFT + OppDR + GrAss + OppTO + GrTO, data = hoops, family = "binomial")
+summary(hoops.model_a)
+hoops.model_1 <- glm(WinLoss ~ 1, data = hoops, family = "binomial")
+summary(hoops.model_1)
+lrtest_result <- lrtest(hoops.model_a, hoops.model_1)
+print(lrtest_result)
+```
+
+model A is not over dispersed as residual devience is smaller than DOF.
+
+```{R}
+hoops.model_0 <- glm(WinLoss ~ GrFT + OppFT + OppDR + OppTO + GrTO + GrAss, data = hoops, family = "binomial")
+summary(hoops.model_0)
+lrtest_result <- lrtest(hoops.model_0, hoops.model_a)
+print(lrtest_result)
+```
+No significant evidence to show that removing Home will improve the model.
+```{R}
+hoops.model_0 <- glm(WinLoss ~ OppAtt + GrFT + OppFT + OppDR + GrAss + OppTO + GrTO, data = hoops, family = "binomial")
+summary(hoops.model_0)
+lrtest_result <- lrtest(hoops.model_0, hoops.model_a)
+print(lrtest_result)
+```
+No significant evidence to show that removing GrAss will improve the model. Larger AIC in model B as well.
+```{R}
+hoops.model_c <- glm(WinLoss ~ GrFT + OppFT + OppDR + OppTO + GrTO + GrAss, data = hoops, family = "binomial")
+summary(hoops.model_c)
+lrtest_result <- lrtest(hoops.model_c, hoops.model_a)
+print(lrtest_result)
+```
+No significant evidence to show that removing OppAtt will improve the model.
+```{R}
+exp_coefs <- exp(coef(hoops.model_a))
+print(exp_coefs)
+```
+GrFT:  When all other variables are held constant and Home is "Away" for each additional free throw attempt by Grinnell, the odds of Winning increase by approximately 13.83%.
+
+OppAtt:  When all other variables are held constant and Home is "Away" for each additional feild goal attempt by the opposing team, the odds of winning increase by approximately 7.27% (WHAT?!?).
+
+Home: When all other variables are held constant and Grinnell plays at home the odds of winning decrease by approximately 24.98% (HUH?)
+
+OppFT: when all other variables are held constant and Home is "Away" for each additional free throw attempt by the opposing team, the odds of Winning decrease by approximately 8.2%.
+
+OppDR: when all other variables are held constant and Home is "Away" for each additional defensive rebound by the opposing team, the odds of Winning decrease by approximately 13.31%
+
+GrAss: When all other variables are held constant and Home is "Away" for each additional assist by Grinnell, the odds of Winning increase by approximately 12.3%.
+
+OppTO: when all other variables are held constant and Home is "Away" for each additional turnover given up by the opposing team, the odds of Winning increases by approximately 36.31%
+
+GrTO: when all other variables are held constant and Home is "Away" for each additional turnover given up by Grinnell, the odds of Winning decreases by approximately 26.66%
+
+
+
+```{R}
+# Building the publications model
+hoops <- hoops %>% mutate(runs = GrOR + OppDR,
+                          Gr3Att_pct = Gr3Att/GrAtt * 100,
+                          GrDF_pct = (1-(OppAtt - (GrRB - GrOR))/OppAtt)*100) #Number shots tried by Opp - Defensive rebounds / total shots
+
+head(hoops)
+
+hoops.model_pub <-  glm(WinLoss ~ runs + GrAtt + Gr3Att_pct + GrDF_pct, data = hoops, family = "binomial")
+
+lrtest_result <- lrtest(hoops.model_a, hoops.model_pub)
+print(lrtest_result)
+```
+This LRtest suggests that we can be extremely (p < 2e-16) confident that my model is better than the published one that got a whole book written about it.
+
 
 ### Multi-level Modeling
 
@@ -36,8 +263,142 @@ Goal: Model exam scores of the 65 schools in Inner  London.
 library(mlmRev)
 ?Exam
 exams<- Exam
+head(exams)
+max(row_number(exams))
+```
 
+```{R}
+library(cowplot)
+
+summary(exams)
+
+str(exams)
+
+
+cor_matrix <- cor(exams[sapply(exams, is.numeric)])
+print(cor_matrix)
+pairs(~normexam + schavg + standLRT, data = exams)
+
+
+ggplot(exams, aes(x = schavg, y = normexam)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(x = "School Average", y = "Normalized Exam Score") +
+  ggtitle("Relationship between School Average and Exam Score")
+
+ggplot(exams, aes(x = standLRT, y = normexam)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(x = "Standardized LRT Score", y = "Normalized Exam Score") +
+  ggtitle("Relationship between Standardized LRT Score and Exam Score")
+
+ggplot(exams, aes(x = factor(school), y = normexam)) +
+  geom_boxplot() +
+  labs(title = "Boxplot of normexam by School",
+       x = "School",
+       y = "Normexam Score")
+
+ggplot(exams, aes(schgend, normexam)) +
+geom_boxplot() +
+labs(x="School Gender", y="Normalized exam scores")
+
+ggplot(exams, aes(vr, normexam)) +
+geom_boxplot() +
+labs(x="VR", y="Normalized exam scores")
+
+ggplot(exams, aes(intake, normexam)) +
+geom_boxplot() +
+labs(x="intake", y="Normalized exam scores")
+
+ggplot(exams, aes(sex, normexam)) +
+geom_boxplot() +
+labs(x="Sex", y="Normalized exam scores")
+
+
+ggplot(exams, aes(type, normexam)) +
+geom_boxplot() +
+labs(x="Type", y="Normalized exam scores")
+
+
+table(exams$schgend, exams$type)
+table(exams$intake, exams$vr)
+
+ggplot(exams, aes(vr, standLRT)) +
+geom_boxplot() +
+labs(x="vr", y="LRT score")
+
+
+ggplot(exams, aes(x = type, y = normexam)) +
+  geom_boxplot() +
+  facet_wrap(~ sex)
+
+```
+Due to the fact that we have multiple variables pertaining to the school as a whole and the school as shown in the boxplot "Boxplot of normexam by School" we can see that school does seem to effect the distribution of scores a multileveled model should be used in this case.
+<br>
+There might be a slight interaction between type and sex and LRTscore and vr but no other interaction is observed.
+<br>
+School gender seems to show that mixxed schools tend to perform slightly lower.
+<br>
+Intake and VR seem to associate with our normalized exam score as a pattern of higher intake to lower exam score seems to show.
+<br>
+By gender males tend to perform worse in the exam.
+<br>
+It looks like we most likely don't need both school gender, sex, and type. School gender can be found by both sex and type.
+```{R}
+exams.model_a <- lmer(normexam ~ standLRT*vr + type*sex + intake + (1|school), Exam)
+exams.model_0 <- lmer(normexam ~ 1 + (1|school), Exam)
+summary(exams.model_a)
+
+```
+There is no evidence to show that this model is fitting on the boundary. Interaction between type and sex seems suspect with a t-value of .403.
+```{R}
+lr_test <- anova(exams.model_a, exams.model_0, test = "Chisq")
+print(lr_test)
+```
+With a P-value of 2.2e-16 this model seems very significant.
+```{R}
+exams.model_b <- lmer(normexam ~ standLRT*vr + type + sex + intake + (1|school), Exam)
+lr_test <- anova(exams.model_b, exams.model_a, test = "Chisq")
+print(lr_test)
+```
+There is no significant evidence that removing the interaction between type and sex improves the model.
+```{R}
+exams.model_pub <- lmer(normexam ~ standLRT + vr + sex + (standLRT|school), Exam)
+summary(exams.model_pub)
+lr_test <- anova(exams.model_a, exams.model_pub, test = "Chisq")
+print(lr_test)
+
+set.seed(1)
+train_indices <- sample(1:nrow(exams), 0.5 * nrow(exams))
+train_data <- exams[train_indices, ]
+test_data <- exams[-train_indices, ]
+
+exams.model_train_a <- exams.model_a <- lmer(normexam ~ standLRT*vr + type*sex + intake + (1|school), train_data)
+
+exams.model_train_pub <- lmer(normexam ~ standLRT + vr + sex + (standLRT|school), train_data)
+
+test_data$predicted1 <- predict(exams.model_train_a, newdata = test_data)
+test_data$predicted2 <- predict(exams.model_train_pub, newdata = test_data)
+
+rmse_model1 <- sqrt(mean((test_data$normexam - test_data$predicted1)^2))
+rmse_model2 <- sqrt(mean((test_data$normexam - test_data$predicted2)^2))
+
+print(paste("RMSE for model 1:", rmse_model1))
+print(paste("RMSE for model 2:", rmse_model2))
+```
+This LRtest suggests that we can be extremely (p < 2e-16) confident that my model is better than the published one. After spliting into test and train the RMSE is lower for my model as well. This could be due to my model being more complex in that it is looking at 2 interaction variables as well as type and intake while their model does not do this. All predictors I use that they do not are significant. Their vr is not significant in their model as well as their intercept. This makes the model probably much worse.
+
+```{R}
+summary(exams.model_a)
 ```
 
 
+1. **Intercept**: All other variables held constant, for individuals with who are female, in a mixed school, and who scored in the lower 25th percentile on the verbal response test and intake test, when standLRT is held constant the expected mean value of normexam is approximately 0.17304.
 
+2. **Slope of a Quantitative Predictor (standLRT)**: The expected mean value of normexam increases by approximately 0.29212 for each 1 unit increase in standLRT, for individuals with who are female, in a mixed school, and who scored in the lower 25th percentile on the verbal response test and intake test.
+
+3. **Slope of a Categorical Predictor (typeSngl)**:  Students at a single sex school will have a mean value of normexam compared to the reference category, for individuals with who are female and who scored in the lower 25th percentile on the verbal response test and intake test, when standLRT is held constant.
+
+4. **Interaction Term (standLRT:vrmid 50%)**: For each one-unit increase in standLRT, the expected mean value of normexam increases by an additional 0.08153 units when vrmid 50% is true, for individuals with who are female, in a mixed school, and who scored in the lower 25th percentile on the intake test.
+
+5. **Intercept 2nd Level (school)** The variance of the random intercepts for schools is 0.07309, with a standard deviation of 0.2704. This implies there is significant variability in the intercepts across different schools

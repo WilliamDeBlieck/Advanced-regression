@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Final Exam</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="FinalExamS24B5_files/libs/clipboard/clipboard.min.js"></script>
+<script src="FinalExamS24B5_files/libs/quarto-html/quarto.js"></script>
+<script src="FinalExamS24B5_files/libs/quarto-html/popper.min.js"></script>
+<script src="FinalExamS24B5_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="FinalExamS24B5_files/libs/quarto-html/anchor.min.js"></script>
+<link href="FinalExamS24B5_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="FinalExamS24B5_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="FinalExamS24B5_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="FinalExamS24B5_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="FinalExamS24B5_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Final Exam</h1>
+<p class="subtitle lead">Advanced Regression</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="rules" class="level5">
+<h5 class="anchored" data-anchor-id="rules">Rules</h5>
+<ul>
+<li>Any use of the internet should be well documented with citations and URLs beyond our online book and the pages following the links of the dataset description.</li>
+<li>Submit via pushing to course Github by due date. If issues arise, email.</li>
+<li>Do not discuss with any other people, AI (Chat GPT), or post-able forums</li>
+</ul>
+</section>
+<section id="grading" class="level5">
+<h5 class="anchored" data-anchor-id="grading">Grading</h5>
+<p>Similar to the first exam I am looking for a broad application of the methods available and a thorough analysis. Your final submission should be well formatted and the html should be report-like with enough explanation to have it be understandable without code.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Packages required for Chapter 10</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gridExtra)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(GGally)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mice)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(nlme)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lme4)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mnormt)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(boot)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(HLMdiag)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pander)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lmtest)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="logistic-regression" class="level3">
+<h3 class="anchored" data-anchor-id="logistic-regression">Logistic Regression</h3>
+<p>Since 1991, David Arseneault, men’s basketball coach of Grinnell College, has developed a unique, fast-paced style of basketball that he calls “the system.” In 1997 Arseneault published a book entitled The Running Game: A Formula for Success in which he outlines the keys to winning basketball games utilizing his fast-paced strategy. In it, Arseneault argues that: (1) making opponents take 150 trips down the court, (2) taking 94 shots (50% of those from behind the three-point arc), (3) rebounding 33% of offensive missed shots, and (4) forcing 32 turnovers would ultimately result in a win. It is these four statistical goals that comprise Arseneault’s “keys to success.” The dataset <strong>Hoops</strong> comes from the 147 games the team played within its athletics conference between the 1997–1998 season through the 2005–2006 season.</p>
+<p>Use these data to investigate the validity Coach Arseneault’s “keys to success” for winning games in the system. Then use the variables available to, if possible, improve on his keys. Write a report of your findings. The variables are:</p>
+<div class="quarto-figure quarto-figure-left">
+<figure class="figure">
+<p><img src="basketball_var.PNG" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>hoops <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"hoops.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 147 Columns: 22
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr  (1): Opp
+dbl (21): Game, Home, OppAtt, GrAtt, Gr3Att, GrFT, OppFT, GrRB, GrOR, OppDR,...
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(hoops)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 22
+   Game Opp      Home OppAtt GrAtt Gr3Att  GrFT OppFT  GrRB  GrOR OppDR OppPoint
+  &lt;dbl&gt; &lt;chr&gt;   &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;
+1     1 Ripon       1     67    89     56    13    38    40    24    29      119
+2     2 Beloit      1     77    93     45    54    50    45    28    28      135
+3     3 Lake F…     0     37    68     20    34    44    25    16    35       98
+4     4 Carroll     0     63    89     71    37    57    49    27    27      116
+5     5 Monmou…     1     52    84     46    26    40    30    22    29      109
+6     6 Knox        1     56    97     56    16    50    41    24    46       99
+# ℹ 10 more variables: GrPoint &lt;dbl&gt;, GrAss &lt;dbl&gt;, OppTO &lt;dbl&gt;, GrTO &lt;dbl&gt;,
+#   GrBlocks &lt;dbl&gt;, GrSteal &lt;dbl&gt;, `40Point` &lt;dbl&gt;, `30Point` &lt;dbl&gt;,
+#   WinLoss &lt;dbl&gt;, PtDiff &lt;dbl&gt;</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>hoops <span class="ot">&lt;-</span> hoops <span class="sc">%&gt;%</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">fourtypoints =</span> <span class="st">"40Point"</span>,</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">thirtypoints =</span> <span class="st">"30Point"</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>hoops <span class="ot">&lt;-</span> hoops <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">Home =</span> <span class="fu">factor</span>(<span class="fu">ifelse</span>(Home <span class="sc">==</span> <span class="dv">1</span>,<span class="st">"home"</span>,<span class="st">"away"</span>)),</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>                          <span class="at">fourtypoints =</span> <span class="fu">factor</span>(<span class="fu">ifelse</span>(fourtypoints <span class="sc">==</span> <span class="dv">1</span>, <span class="st">"yes"</span>,<span class="st">"no"</span>)),</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>                          <span class="at">thirtypoints =</span> <span class="fu">factor</span>(<span class="fu">ifelse</span>(thirtypoints <span class="sc">==</span> <span class="dv">1</span>, <span class="st">"yes"</span>,<span class="st">"no"</span>)),</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>                          <span class="at">WinLoss =</span> <span class="fu">factor</span>(<span class="fu">ifelse</span>(WinLoss <span class="sc">==</span> <span class="dv">1</span>, <span class="st">"win"</span>,<span class="st">"loss"</span>))</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>                          )</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(hoops)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 22
+   Game Opp     Home  OppAtt GrAtt Gr3Att  GrFT OppFT  GrRB  GrOR OppDR OppPoint
+  &lt;dbl&gt; &lt;chr&gt;   &lt;fct&gt;  &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;
+1     1 Ripon   home      67    89     56    13    38    40    24    29      119
+2     2 Beloit  home      77    93     45    54    50    45    28    28      135
+3     3 Lake F… away      37    68     20    34    44    25    16    35       98
+4     4 Carroll away      63    89     71    37    57    49    27    27      116
+5     5 Monmou… home      52    84     46    26    40    30    22    29      109
+6     6 Knox    home      56    97     56    16    50    41    24    46       99
+# ℹ 10 more variables: GrPoint &lt;dbl&gt;, GrAss &lt;dbl&gt;, OppTO &lt;dbl&gt;, GrTO &lt;dbl&gt;,
+#   GrBlocks &lt;dbl&gt;, GrSteal &lt;dbl&gt;, fourtypoints &lt;fct&gt;, thirtypoints &lt;fct&gt;,
+#   WinLoss &lt;fct&gt;, PtDiff &lt;dbl&gt;</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(hoops)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "Game"         "Opp"          "Home"         "OppAtt"       "GrAtt"       
+ [6] "Gr3Att"       "GrFT"         "OppFT"        "GrRB"         "GrOR"        
+[11] "OppDR"        "OppPoint"     "GrPoint"      "GrAss"        "OppTO"       
+[16] "GrTO"         "GrBlocks"     "GrSteal"      "fourtypoints" "thirtypoints"
+[21] "WinLoss"      "PtDiff"      </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>quantitative_plot <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, main_title, x_label, y_label) {</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cdplot</span>(x, y, <span class="at">main =</span> main_title, <span class="at">xlab =</span> x_label, <span class="at">ylab =</span> y_label)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">boxplot</span>(x <span class="sc">~</span> y, <span class="at">main =</span> <span class="fu">paste</span>(<span class="st">"Boxplot of"</span>, x_label, <span class="st">"by"</span>, y_label), <span class="at">xlab =</span> y_label, <span class="at">ylab =</span> x_label)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>categorical_plot <span class="ot">&lt;-</span> <span class="cf">function</span>(data, x_var, fill_var, title, x_label, y_label, fill_colors) {</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(data, <span class="fu">aes_string</span>(<span class="at">x =</span> x_var, <span class="at">fill =</span> fill_var)) <span class="sc">+</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_bar</span>(<span class="at">position =</span> <span class="st">"fill"</span>) <span class="sc">+</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">title =</span> title, <span class="at">x =</span> x_label, <span class="at">y =</span> y_label) <span class="sc">+</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> fill_colors)</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>quantitative_plot_all <span class="ot">&lt;-</span> <span class="cf">function</span>(data, y_var) {</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (var <span class="cf">in</span> <span class="fu">names</span>(data)) {</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">is.numeric</span>(data[[var]]) <span class="sc">&amp;&amp;</span> var <span class="sc">!=</span> y_var) {</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>      <span class="fu">quantitative_plot</span>(data[[var]], data[[y_var]], <span class="fu">paste</span>(<span class="st">"CD Plot of"</span>, var, <span class="st">"by"</span>, y_var), var, y_var)</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>categorical_plot_all <span class="ot">&lt;-</span> <span class="cf">function</span>(data, fill_var, title, x_label, y_label, fill_colors) {</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (var <span class="cf">in</span> <span class="fu">names</span>(data)) {</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">is.factor</span>(data[[var]]) <span class="sc">&amp;&amp;</span> var <span class="sc">!=</span> fill_var) {</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>      <span class="fu">categorical_plot</span>(data, var, fill_var, title, x_label, y_label, fill_colors)</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a><span class="fu">quantitative_plot_all</span>(hoops, <span class="st">"WinLoss"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-2.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-3.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-4.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-5.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-6.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-7.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-8.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-9.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-10.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-11.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-12.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-13.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-14.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-15.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-16.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-17.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-18.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-19.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-20.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-21.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-22.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-23.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-24.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-25.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-26.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-27.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-28.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-29.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-30.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-31.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-32.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-33.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-34.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">categorical_plot_all</span>(hoops, <span class="st">"WinLoss"</span>, <span class="st">"Segmented Bar Chart of Home by WinLoss"</span>, <span class="st">"WinLoss"</span>, <span class="st">"Proportion"</span>, <span class="fu">c</span>(<span class="st">"home"</span> <span class="ot">=</span> <span class="st">"lightgreen"</span>, <span class="st">"away"</span> <span class="ot">=</span> <span class="st">"darkgreen"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: `aes_string()` was deprecated in ggplot2 3.0.0.
+ℹ Please use tidy evaluation idioms with `aes()`.
+ℹ See also `vignette("ggplot2-in-packages")` for more information.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cdplot</span>(hoops<span class="sc">$</span>OppAtt, hoops<span class="sc">$</span>WinLoss, <span class="at">main =</span> <span class="st">"CD Plot of OppATT by WinLoss"</span>, <span class="at">xlab =</span> <span class="st">"OppAtt"</span>, <span class="at">ylab =</span> <span class="st">"WinLoss"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-35.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(OppAtt <span class="sc">~</span> WinLoss, <span class="at">data =</span> hoops, <span class="at">main =</span> <span class="st">"Boxplot of OppAtt by WinLoss"</span>, <span class="at">xlab =</span> <span class="st">"WinLoss"</span>, <span class="at">ylab =</span> <span class="st">"OppAtt"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-36.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(hoops, <span class="fu">aes</span>(<span class="at">x =</span> WinLoss, <span class="at">fill =</span> Home)) <span class="sc">+</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">position =</span> <span class="st">"fill"</span>) <span class="sc">+</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Segmented Bar Chart of Home by WinLoss"</span>, <span class="at">x =</span> <span class="st">"WinLoss"</span>, <span class="at">y =</span> <span class="st">"Proportion"</span>) <span class="sc">+</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"home"</span> <span class="ot">=</span> <span class="st">"lightgreen"</span>, <span class="st">"away"</span> <span class="ot">=</span> <span class="st">"darkgreen"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-37.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>cor_matrix <span class="ot">&lt;-</span> <span class="fu">cor</span>(hoops[<span class="fu">sapply</span>(hoops, is.numeric)])</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(cor_matrix)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                Game      OppAtt       GrAtt      Gr3Att        GrFT
+Game      1.00000000  0.19180049  0.15458220  0.09534721 -0.13781518
+OppAtt    0.19180049  1.00000000  0.52308032  0.43383364  0.28447827
+GrAtt     0.15458220  0.52308032  1.00000000  0.72445854  0.10951069
+Gr3Att    0.09534721  0.43383364  0.72445854  1.00000000  0.01917548
+GrFT     -0.13781518  0.28447827  0.10951069  0.01917548  1.00000000
+OppFT    -0.24942833 -0.09671881  0.25825588  0.16745281  0.25881485
+GrRB      0.06343311  0.46554537  0.62889335  0.51461045  0.21642082
+GrOR      0.04481934  0.27089193  0.66320459  0.54298397  0.14945467
+OppDR    -0.03592652  0.22817552  0.63278820  0.53528834  0.15737198
+OppPoint  0.03816904  0.58427307  0.53561071  0.40900088  0.28603463
+GrPoint   0.15955633  0.63745383  0.61543383  0.37968377  0.51434082
+GrAss     0.19178961  0.37639781  0.30248092  0.29842824  0.06136473
+OppTO    -0.19498043 -0.16734153  0.25501807  0.09670171  0.28784560
+GrTO     -0.25774184  0.01845037 -0.15557716  0.03880022 -0.04627378
+GrBlocks  0.20328767  0.34240111  0.24657856  0.13283129  0.16360413
+GrSteal  -0.13026887 -0.02276313  0.31113552  0.10706424  0.14371415
+PtDiff    0.12830965  0.07207963  0.09864675 -0.01929748  0.24731516
+                OppFT         GrRB       GrOR       OppDR    OppPoint
+Game     -0.249428331  0.063433113 0.04481934 -0.03592652  0.03816904
+OppAtt   -0.096718806  0.465545371 0.27089193  0.22817552  0.58427307
+GrAtt     0.258255885  0.628893351 0.66320459  0.63278820  0.53561071
+Gr3Att    0.167452811  0.514610452 0.54298397  0.53528834  0.40900088
+GrFT      0.258814849  0.216420815 0.14945467  0.15737198  0.28603463
+OppFT     1.000000000  0.008850376 0.07191317  0.44769064  0.48318678
+GrRB      0.008850376  1.000000000 0.83734733  0.17699746  0.08407840
+GrOR      0.071913170  0.837347332 1.00000000  0.21377188  0.19418009
+OppDR     0.447690642  0.176997456 0.21377188  1.00000000  0.44389924
+OppPoint  0.483186778  0.084078404 0.19418009  0.44389924  1.00000000
+GrPoint   0.162182291  0.372873830 0.24008595  0.15301969  0.53285564
+GrAss    -0.069773346  0.138117337 0.02941617 -0.03594992  0.23910744
+OppTO     0.187404834  0.019108314 0.13235316  0.29656815 -0.02164102
+GrTO      0.193456701 -0.009055047 0.07384933 -0.12394418  0.20596980
+GrBlocks -0.111011444  0.238826632 0.17508350  0.11980202  0.03454330
+GrSteal   0.137070946  0.033997683 0.12925672  0.25022541  0.05854752
+PtDiff   -0.322981024  0.305076437 0.05354860 -0.29250126 -0.46172249
+            GrPoint       GrAss       OppTO         GrTO    GrBlocks
+Game      0.1595563  0.19178961 -0.19498043 -0.257741835  0.20328767
+OppAtt    0.6374538  0.37639781 -0.16734153  0.018450370  0.34240111
+GrAtt     0.6154338  0.30248092  0.25501807 -0.155577158  0.24657856
+Gr3Att    0.3796838  0.29842824  0.09670171  0.038800217  0.13283129
+GrFT      0.5143408  0.06136473  0.28784560 -0.046273782  0.16360413
+OppFT     0.1621823 -0.06977335  0.18740483  0.193456701 -0.11101144
+GrRB      0.3728738  0.13811734  0.01910831 -0.009055047  0.23882663
+GrOR      0.2400860  0.02941617  0.13235316  0.073849335  0.17508350
+OppDR     0.1530197 -0.03594992  0.29656815 -0.123944177  0.11980202
+OppPoint  0.5328556  0.23910744 -0.02164102  0.205969797  0.03454330
+GrPoint   1.0000000  0.55408114  0.20229201 -0.164209350  0.24135594
+GrAss     0.5540811  1.00000000  0.02976773 -0.103729947  0.16060372
+OppTO     0.2022920  0.02976773  1.00000000  0.271219044  0.14609152
+GrTO     -0.1642093 -0.10372995  0.27121904  1.000000000 -0.03532167
+GrBlocks  0.2413559  0.16060372  0.14609152 -0.035321674  1.00000000
+GrSteal   0.2520450  0.13202333  0.69457488  0.122089957  0.10831497
+PtDiff    0.5045741  0.33685138  0.23412985 -0.382277428  0.21775428
+             GrSteal      PtDiff
+Game     -0.13026887  0.12830965
+OppAtt   -0.02276313  0.07207963
+GrAtt     0.31113552  0.09864675
+Gr3Att    0.10706424 -0.01929748
+GrFT      0.14371415  0.24731516
+OppFT     0.13707095 -0.32298102
+GrRB      0.03399768  0.30507644
+GrOR      0.12925672  0.05354860
+OppDR     0.25022541 -0.29250126
+OppPoint  0.05854752 -0.46172249
+GrPoint   0.25204497  0.50457411
+GrAss     0.13202333  0.33685138
+OppTO     0.69457488  0.23412985
+GrTO      0.12208996 -0.38227743
+GrBlocks  0.10831497  0.21775428
+GrSteal   1.00000000  0.20446786
+PtDiff    0.20446786  1.00000000</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(corrplot)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>corrplot 0.92 loaded</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>quantitative_vars <span class="ot">&lt;-</span> hoops[, <span class="fu">sapply</span>(hoops, is.numeric)]</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>correlation_matrix <span class="ot">&lt;-</span> <span class="fu">cor</span>(quantitative_vars)</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="fu">corrplot</span>(correlation_matrix, <span class="at">method =</span> <span class="st">"circle"</span>, <span class="at">type =</span> <span class="st">"upper"</span>, <span class="at">order =</span> <span class="st">"hclust"</span>, <span class="at">tl.col =</span> <span class="st">"black"</span>, <span class="at">tl.srt =</span> <span class="dv">45</span>, <span class="at">addrect =</span> <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-2-38.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<ol type="1">
+<li>OppAtt: it seems from CdPlot as OppAtt gets larger so too does the proportion of losses. 1. Boxplot shows win higher in all quantiles.</li>
+<li>GrAtt: it seems from CdPlot as GrAtt gets larger at start so too does the proportion of losses then it goes back down then back up again. Boxplot shows more varied responce.</li>
+<li>Gr3Att: it seems from CdPlot as Gr3Att gets larger at start so too does the proportion of losses then it goes back down then back up again. The box plot shows lower median for wins.</li>
+<li>GrFt: The cdplot shows as it gets higher so too does win proportion. Boxplot shows much higher numbers for wins.</li>
+<li>OppFt: Opposite of GrFt.</li>
+<li>GrRB: Same as GRFt.</li>
+<li>OppOr: Cdplot is wavy and not consistent in trend. Boxplot shows little difference.</li>
+<li>OppDR: large spike at start and dip at 47 in cdplot. Boxplot shows much lower median.</li>
+<li>GrAss: Same as GrFT</li>
+<li>OppTo: Increases a lot in the start then dips in proportion to wins around 40 in cdplot. Boxplot shows much higher quantiles for win.</li>
+<li>GrTo: Opposite of GrFt</li>
+<li>GrBlocks: Large spike in proportion around 4, fall in 8 and then large increase in cdplot. boxplot shows much higher median.</li>
+<li>GrSteal: Cdplot shows Large jump around 10 then very small increase up to 25 then large increase in cdplot. In boxplot slightly higher median.</li>
+</ol>
+<p>Correlated vars: - GrAtt3, GrAtt &amp; OppDr, GrOR, GrRB, GRPoint, OppAtt - Grsteal &amp; OpFt - GrRB &amp; GrPoint, OppPoint, GrFT, PtDiff, GrAss,</p>
+<p>Possible vars for model: OppAtt, GrFT, OppFT, OppDR, GrAss, OppTo, GrTo, Home</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(caret)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: lattice</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'lattice'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:boot':
+
+    melanoma</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'caret'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:purrr':
+
+    lift</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>fit_and_test_interaction <span class="ot">&lt;-</span> <span class="cf">function</span>(variables, data) {</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  formula <span class="ot">&lt;-</span> <span class="fu">as.formula</span>(<span class="fu">paste</span>(<span class="st">"WinLoss ~"</span>, variables[<span class="dv">1</span>], <span class="st">"+"</span>, variables[<span class="dv">2</span>]))</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  model <span class="ot">&lt;-</span> <span class="fu">glm</span>(formula, <span class="at">data =</span> data, <span class="at">family =</span> <span class="st">"binomial"</span>)</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>  formula_interaction <span class="ot">&lt;-</span> <span class="fu">as.formula</span>(<span class="fu">paste</span>(<span class="st">"WinLoss ~"</span>, variables[<span class="dv">1</span>], <span class="st">"*"</span>, variables[<span class="dv">2</span>]))</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>  model_interaction <span class="ot">&lt;-</span> <span class="fu">glm</span>(formula_interaction, <span class="at">data =</span> data, <span class="at">family =</span> <span class="st">"binomial"</span>)</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>  min_obs <span class="ot">&lt;-</span> <span class="fu">min</span>(<span class="fu">nrow</span>(data), <span class="fu">nrow</span>(model_interaction<span class="sc">$</span>model))</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>  data <span class="ot">&lt;-</span> data[<span class="dv">1</span><span class="sc">:</span>min_obs, ]</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>  model <span class="ot">&lt;-</span> <span class="fu">update</span>(model, <span class="at">data =</span> data)</span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>  model_interaction <span class="ot">&lt;-</span> <span class="fu">update</span>(model_interaction, <span class="at">data =</span> data)</span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>  lr_test <span class="ot">&lt;-</span> <span class="fu">lrtest</span>(model_interaction, model)</span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">list</span>(<span class="at">variables =</span> variables, <span class="at">lr_test =</span> lr_test))</span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a>variables <span class="ot">&lt;-</span> <span class="fu">combn</span>(<span class="fu">names</span>(hoops)[<span class="dv">1</span><span class="sc">:</span>(<span class="fu">ncol</span>(hoops)<span class="sc">-</span><span class="dv">1</span>)], <span class="dv">2</span>, <span class="at">simplify =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a>interaction_tests <span class="ot">&lt;-</span> <span class="fu">lapply</span>(variables, fit_and_test_interaction, <span class="at">data =</span> hoops)</span>
+<span id="cb27-21"><a href="#cb27-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-22"><a href="#cb27-22" aria-hidden="true" tabindex="-1"></a>significant_interactions <span class="ot">&lt;-</span> interaction_tests[<span class="fu">sapply</span>(interaction_tests, <span class="cf">function</span>(x) x<span class="sc">$</span>lr_test<span class="sc">$</span><span class="st">"Pr(&gt;Chisq)"</span> <span class="sc">&lt;</span> <span class="fl">0.05</span>)]</span>
+<span id="cb27-23"><a href="#cb27-23" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(significant_interactions)) {</span>
+<span id="cb27-24"><a href="#cb27-24" aria-hidden="true" tabindex="-1"></a>  vars <span class="ot">&lt;-</span> significant_interactions[[i]]<span class="sc">$</span>variables</span>
+<span id="cb27-25"><a href="#cb27-25" aria-hidden="true" tabindex="-1"></a>  lr_test <span class="ot">&lt;-</span> significant_interactions[[i]]<span class="sc">$</span>lr_test</span>
+<span id="cb27-26"><a href="#cb27-26" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="dv">0</span><span class="sc">&amp;!</span><span class="fu">is.null</span>(lr_test)){</span>
+<span id="cb27-27"><a href="#cb27-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">print</span>(lr_test)</span>
+<span id="cb27-28"><a href="#cb27-28" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb27-29"><a href="#cb27-29" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>No significant interactions found</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>hoops.model_a <span class="ot">&lt;-</span> <span class="fu">glm</span>(WinLoss <span class="sc">~</span> OppAtt <span class="sc">+</span> Home <span class="sc">+</span> GrFT <span class="sc">+</span> OppFT <span class="sc">+</span> OppDR <span class="sc">+</span> GrAss <span class="sc">+</span> OppTO <span class="sc">+</span> GrTO, <span class="at">data =</span> hoops, <span class="at">family =</span> <span class="st">"binomial"</span>)</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(hoops.model_a)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+glm(formula = WinLoss ~ OppAtt + Home + GrFT + OppFT + OppDR + 
+    GrAss + OppTO + GrTO, family = "binomial", data = hoops)
+
+Deviance Residuals: 
+     Min        1Q    Median        3Q       Max  
+-2.21450  -0.38872   0.04311   0.36353   2.36072  
+
+Coefficients:
+            Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept) -0.86638    2.28038  -0.380 0.703999    
+OppAtt       0.07021    0.03916   1.793 0.073029 .  
+Homehome    -0.28738    0.65160  -0.441 0.659187    
+GrFT         0.12954    0.04072   3.181 0.001467 ** 
+OppFT       -0.08553    0.03906  -2.190 0.028523 *  
+OppDR       -0.26540    0.07443  -3.566 0.000363 ***
+GrAss        0.11599    0.06674   1.738 0.082226 .  
+OppTO        0.30982    0.07826   3.959 7.53e-05 ***
+GrTO        -0.30996    0.07354  -4.215 2.50e-05 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 203.452  on 146  degrees of freedom
+Residual deviance:  88.754  on 138  degrees of freedom
+AIC: 106.75
+
+Number of Fisher Scoring iterations: 6</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>hoops.model_1 <span class="ot">&lt;-</span> <span class="fu">glm</span>(WinLoss <span class="sc">~</span> <span class="dv">1</span>, <span class="at">data =</span> hoops, <span class="at">family =</span> <span class="st">"binomial"</span>)</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(hoops.model_1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+glm(formula = WinLoss ~ 1, family = "binomial", data = hoops)
+
+Deviance Residuals: 
+   Min      1Q  Median      3Q     Max  
+-1.218  -1.218   1.137   1.137   1.137  
+
+Coefficients:
+            Estimate Std. Error z value Pr(&gt;|z|)
+(Intercept)  0.09531    0.16514   0.577    0.564
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 203.45  on 146  degrees of freedom
+Residual deviance: 203.45  on 146  degrees of freedom
+AIC: 205.45
+
+Number of Fisher Scoring iterations: 3</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>lrtest_result <span class="ot">&lt;-</span> <span class="fu">lrtest</span>(hoops.model_a, hoops.model_1)</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(lrtest_result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Likelihood ratio test
+
+Model 1: WinLoss ~ OppAtt + Home + GrFT + OppFT + OppDR + GrAss + OppTO + 
+    GrTO
+Model 2: WinLoss ~ 1
+  #Df   LogLik Df Chisq Pr(&gt;Chisq)    
+1   9  -44.377                        
+2   1 -101.726 -8 114.7  &lt; 2.2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+</div>
+<p>model A is not over dispersed as residual devience is smaller than DOF.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>hoops.model_0 <span class="ot">&lt;-</span> <span class="fu">glm</span>(WinLoss <span class="sc">~</span> GrFT <span class="sc">+</span> OppFT <span class="sc">+</span> OppDR <span class="sc">+</span> OppTO <span class="sc">+</span> GrTO <span class="sc">+</span> GrAss, <span class="at">data =</span> hoops, <span class="at">family =</span> <span class="st">"binomial"</span>)</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(hoops.model_0)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+glm(formula = WinLoss ~ GrFT + OppFT + OppDR + OppTO + GrTO + 
+    GrAss, family = "binomial", data = hoops)
+
+Deviance Residuals: 
+     Min        1Q    Median        3Q       Max  
+-2.13368  -0.38329   0.04375   0.41404   2.71475  
+
+Coefficients:
+            Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)  1.17875    1.99420   0.591 0.554460    
+GrFT         0.15152    0.03449   4.393 1.12e-05 ***
+OppFT       -0.11285    0.03307  -3.412 0.000645 ***
+OppDR       -0.18656    0.05682  -3.283 0.001026 ** 
+OppTO        0.23629    0.06065   3.896 9.78e-05 ***
+GrTO        -0.25113    0.06211  -4.044 5.26e-05 ***
+GrAss        0.16316    0.05589   2.919 0.003508 ** 
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 203.452  on 146  degrees of freedom
+Residual deviance:  92.466  on 140  degrees of freedom
+AIC: 106.47
+
+Number of Fisher Scoring iterations: 6</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>lrtest_result <span class="ot">&lt;-</span> <span class="fu">lrtest</span>(hoops.model_0, hoops.model_a)</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(lrtest_result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Likelihood ratio test
+
+Model 1: WinLoss ~ GrFT + OppFT + OppDR + OppTO + GrTO + GrAss
+Model 2: WinLoss ~ OppAtt + Home + GrFT + OppFT + OppDR + GrAss + OppTO + 
+    GrTO
+  #Df  LogLik Df  Chisq Pr(&gt;Chisq)
+1   7 -46.233                     
+2   9 -44.377  2 3.7116     0.1563</code></pre>
+</div>
+</div>
+<p>No significant evidence to show that removing Home will improve the model.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>hoops.model_0 <span class="ot">&lt;-</span> <span class="fu">glm</span>(WinLoss <span class="sc">~</span> OppAtt <span class="sc">+</span> GrFT <span class="sc">+</span> OppFT <span class="sc">+</span> OppDR <span class="sc">+</span> GrAss <span class="sc">+</span> OppTO <span class="sc">+</span> GrTO, <span class="at">data =</span> hoops, <span class="at">family =</span> <span class="st">"binomial"</span>)</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(hoops.model_0)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+glm(formula = WinLoss ~ OppAtt + GrFT + OppFT + OppDR + GrAss + 
+    OppTO + GrTO, family = "binomial", data = hoops)
+
+Deviance Residuals: 
+     Min        1Q    Median        3Q       Max  
+-2.14435  -0.39192   0.04858   0.37192   2.34044  
+
+Coefficients:
+            Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept) -0.79559    2.27407  -0.350 0.726450    
+OppAtt       0.07173    0.03917   1.831 0.067037 .  
+GrFT         0.12253    0.03720   3.294 0.000989 ***
+OppFT       -0.07922    0.03620  -2.188 0.028645 *  
+OppDR       -0.26438    0.07438  -3.555 0.000379 ***
+GrAss        0.10647    0.06315   1.686 0.091822 .  
+OppTO        0.29980    0.07398   4.053 5.07e-05 ***
+GrTO        -0.30649    0.07261  -4.221 2.43e-05 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 203.452  on 146  degrees of freedom
+Residual deviance:  88.951  on 139  degrees of freedom
+AIC: 104.95
+
+Number of Fisher Scoring iterations: 6</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>lrtest_result <span class="ot">&lt;-</span> <span class="fu">lrtest</span>(hoops.model_0, hoops.model_a)</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(lrtest_result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Likelihood ratio test
+
+Model 1: WinLoss ~ OppAtt + GrFT + OppFT + OppDR + GrAss + OppTO + GrTO
+Model 2: WinLoss ~ OppAtt + Home + GrFT + OppFT + OppDR + GrAss + OppTO + 
+    GrTO
+  #Df  LogLik Df  Chisq Pr(&gt;Chisq)
+1   8 -44.476                     
+2   9 -44.377  1 0.1973     0.6569</code></pre>
+</div>
+</div>
+<p>No significant evidence to show that removing GrAss will improve the model. Larger AIC in model B as well.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>hoops.model_c <span class="ot">&lt;-</span> <span class="fu">glm</span>(WinLoss <span class="sc">~</span> GrFT <span class="sc">+</span> OppFT <span class="sc">+</span> OppDR <span class="sc">+</span> OppTO <span class="sc">+</span> GrTO <span class="sc">+</span> GrAss, <span class="at">data =</span> hoops, <span class="at">family =</span> <span class="st">"binomial"</span>)</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(hoops.model_c)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+glm(formula = WinLoss ~ GrFT + OppFT + OppDR + OppTO + GrTO + 
+    GrAss, family = "binomial", data = hoops)
+
+Deviance Residuals: 
+     Min        1Q    Median        3Q       Max  
+-2.13368  -0.38329   0.04375   0.41404   2.71475  
+
+Coefficients:
+            Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)  1.17875    1.99420   0.591 0.554460    
+GrFT         0.15152    0.03449   4.393 1.12e-05 ***
+OppFT       -0.11285    0.03307  -3.412 0.000645 ***
+OppDR       -0.18656    0.05682  -3.283 0.001026 ** 
+OppTO        0.23629    0.06065   3.896 9.78e-05 ***
+GrTO        -0.25113    0.06211  -4.044 5.26e-05 ***
+GrAss        0.16316    0.05589   2.919 0.003508 ** 
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 203.452  on 146  degrees of freedom
+Residual deviance:  92.466  on 140  degrees of freedom
+AIC: 106.47
+
+Number of Fisher Scoring iterations: 6</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>lrtest_result <span class="ot">&lt;-</span> <span class="fu">lrtest</span>(hoops.model_c, hoops.model_a)</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(lrtest_result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Likelihood ratio test
+
+Model 1: WinLoss ~ GrFT + OppFT + OppDR + OppTO + GrTO + GrAss
+Model 2: WinLoss ~ OppAtt + Home + GrFT + OppFT + OppDR + GrAss + OppTO + 
+    GrTO
+  #Df  LogLik Df  Chisq Pr(&gt;Chisq)
+1   7 -46.233                     
+2   9 -44.377  2 3.7116     0.1563</code></pre>
+</div>
+</div>
+<p>No significant evidence to show that removing OppAtt will improve the model.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>exp_coefs <span class="ot">&lt;-</span> <span class="fu">exp</span>(<span class="fu">coef</span>(hoops.model_a))</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(exp_coefs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>(Intercept)      OppAtt    Homehome        GrFT       OppFT       OppDR 
+  0.4204715   1.0727307   0.7502278   1.1383078   0.9180220   0.7669000 
+      GrAss       OppTO        GrTO 
+  1.1229900   1.3631810   0.7334768 </code></pre>
+</div>
+</div>
+<p>GrFT: When all other variables are held constant and Home is “Away” for each additional free throw attempt by Grinnell, the odds of Winning increase by approximately 13.83%.</p>
+<p>OppAtt: When all other variables are held constant and Home is “Away” for each additional feild goal attempt by the opposing team, the odds of winning increase by approximately 7.27% (WHAT?!?).</p>
+<p>Home: When all other variables are held constant and Grinnell plays at home the odds of winning decrease by approximately 24.98% (HUH?)</p>
+<p>OppFT: when all other variables are held constant and Home is “Away” for each additional free throw attempt by the opposing team, the odds of Winning decrease by approximately 8.2%.</p>
+<p>OppDR: when all other variables are held constant and Home is “Away” for each additional defensive rebound by the opposing team, the odds of Winning decrease by approximately 13.31%</p>
+<p>GrAss: When all other variables are held constant and Home is “Away” for each additional assist by Grinnell, the odds of Winning increase by approximately 12.3%.</p>
+<p>OppTO: when all other variables are held constant and Home is “Away” for each additional turnover given up by the opposing team, the odds of Winning increases by approximately 36.31%</p>
+<p>GrTO: when all other variables are held constant and Home is “Away” for each additional turnover given up by Grinnell, the odds of Winning decreases by approximately 26.66%</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Building the publications model</span></span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>hoops <span class="ot">&lt;-</span> hoops <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">runs =</span> GrOR <span class="sc">+</span> OppDR,</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>                          <span class="at">Gr3Att_pct =</span> Gr3Att<span class="sc">/</span>GrAtt <span class="sc">*</span> <span class="dv">100</span>,</span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>                          <span class="at">GrDF_pct =</span> (<span class="dv">1</span><span class="sc">-</span>(OppAtt <span class="sc">-</span> (GrRB <span class="sc">-</span> GrOR))<span class="sc">/</span>OppAtt)<span class="sc">*</span><span class="dv">100</span>) <span class="co">#Number shots tried by Opp - Defensive rebounds / total shots</span></span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(hoops)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 25
+   Game Opp     Home  OppAtt GrAtt Gr3Att  GrFT OppFT  GrRB  GrOR OppDR OppPoint
+  &lt;dbl&gt; &lt;chr&gt;   &lt;fct&gt;  &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;
+1     1 Ripon   home      67    89     56    13    38    40    24    29      119
+2     2 Beloit  home      77    93     45    54    50    45    28    28      135
+3     3 Lake F… away      37    68     20    34    44    25    16    35       98
+4     4 Carroll away      63    89     71    37    57    49    27    27      116
+5     5 Monmou… home      52    84     46    26    40    30    22    29      109
+6     6 Knox    home      56    97     56    16    50    41    24    46       99
+# ℹ 13 more variables: GrPoint &lt;dbl&gt;, GrAss &lt;dbl&gt;, OppTO &lt;dbl&gt;, GrTO &lt;dbl&gt;,
+#   GrBlocks &lt;dbl&gt;, GrSteal &lt;dbl&gt;, fourtypoints &lt;fct&gt;, thirtypoints &lt;fct&gt;,
+#   WinLoss &lt;fct&gt;, PtDiff &lt;dbl&gt;, runs &lt;dbl&gt;, Gr3Att_pct &lt;dbl&gt;, GrDF_pct &lt;dbl&gt;</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>hoops.model_pub <span class="ot">&lt;-</span>  <span class="fu">glm</span>(WinLoss <span class="sc">~</span> runs <span class="sc">+</span> GrAtt <span class="sc">+</span> Gr3Att_pct <span class="sc">+</span> GrDF_pct, <span class="at">data =</span> hoops, <span class="at">family =</span> <span class="st">"binomial"</span>)</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>lrtest_result <span class="ot">&lt;-</span> <span class="fu">lrtest</span>(hoops.model_a, hoops.model_pub)</span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(lrtest_result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Likelihood ratio test
+
+Model 1: WinLoss ~ OppAtt + Home + GrFT + OppFT + OppDR + GrAss + OppTO + 
+    GrTO
+Model 2: WinLoss ~ runs + GrAtt + Gr3Att_pct + GrDF_pct
+  #Df  LogLik Df  Chisq Pr(&gt;Chisq)    
+1   9 -44.377                         
+2   5 -91.513 -4 94.271  &lt; 2.2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+</div>
+<p>This LRtest suggests that we can be extremely (p &lt; 2e-16) confident that my model is better than the published one that got a whole book written about it.</p>
+</section>
+<section id="multi-level-modeling" class="level3">
+<h3 class="anchored" data-anchor-id="multi-level-modeling">Multi-level Modeling</h3>
+<p>Goal: Model exam scores of the 65 schools in Inner London. - Conduct an EDA. - Using your EDA, discuss the necessity (or lack-there-of) of interaction terms and a multilevel model - Find the best possible model, from techniques covered in this class or prior, to model the exam scores. - Compare your best model that the one in the publication. Which is better? Why? Consider multiple criterion. - Make sure to interpret one coefficient from each level of the following: intercepts at both levels, a slope of a categorical at both levels, a slope of a quantitative at both levels, at least 1 interaction term at one of the two levels, if they are in the model .</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="co">#install.packages('mlmRev')</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mlmRev)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'mlmRev'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:nlme':
+
+    bdf, Oxboys</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>?Exam</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>starting httpd help server ...</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code> done</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>exams<span class="ot">&lt;-</span> Exam</span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(exams)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  school   normexam schgend    schavg      vr     intake   standLRT sex type
+1      1  0.2613242   mixed 0.1661752 mid 50% bottom 25%  0.6190592   F  Mxd
+2      1  0.1340672   mixed 0.1661752 mid 50%    mid 50%  0.2058022   F  Mxd
+3      1 -1.7238820   mixed 0.1661752 mid 50%    top 25% -1.3645760   M  Mxd
+4      1  0.9675862   mixed 0.1661752 mid 50%    mid 50%  0.2058022   F  Mxd
+5      1  0.5443412   mixed 0.1661752 mid 50%    mid 50%  0.3711052   F  Mxd
+6      1  1.7348992   mixed 0.1661752 mid 50% bottom 25%  2.1894372   M  Mxd
+  student
+1     143
+2     145
+3     142
+4     141
+5     138
+6     155</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="fu">max</span>(<span class="fu">row_number</span>(exams))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 4059</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(cowplot)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'cowplot'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:lubridate':
+
+    stamp</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(exams)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     school        normexam          schgend         schavg        
+ 14     : 198   Min.   :-3.666072   mixed:2169   Min.   :-0.75596  
+ 17     : 126   1st Qu.:-0.699505   boys : 513   1st Qu.:-0.14934  
+ 18     : 120   Median : 0.004322   girls:1377   Median :-0.02020  
+ 49     : 113   Mean   :-0.000114                Mean   : 0.00181  
+ 8      : 102   3rd Qu.: 0.678759                3rd Qu.: 0.21053  
+ 15     :  91   Max.   : 3.666091                Max.   : 0.63766  
+ (Other):3309                                                      
+          vr              intake        standLRT        sex        type     
+ bottom 25%: 640   bottom 25%:1176   Min.   :-2.93495   F:2436   Mxd :2169  
+ mid 50%   :2263   mid 50%   :2344   1st Qu.:-0.62071   M:1623   Sngl:1890  
+ top 25%   :1156   top 25%   : 539   Median : 0.04050                       
+                                     Mean   : 0.00181                       
+                                     3rd Qu.: 0.61906                       
+                                     Max.   : 3.01595                       
+                                                                            
+    student    
+ 20     :  34  
+ 54     :  34  
+ 15     :  33  
+ 22     :  33  
+ 31     :  33  
+ 59     :  33  
+ (Other):3859  </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(exams)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>'data.frame':   4059 obs. of  10 variables:
+ $ school  : Factor w/ 65 levels "1","2","3","4",..: 1 1 1 1 1 1 1 1 1 1 ...
+ $ normexam: num  0.261 0.134 -1.724 0.968 0.544 ...
+ $ schgend : Factor w/ 3 levels "mixed","boys",..: 1 1 1 1 1 1 1 1 1 1 ...
+ $ schavg  : num  0.166 0.166 0.166 0.166 0.166 ...
+ $ vr      : Factor w/ 3 levels "bottom 25%","mid 50%",..: 2 2 2 2 2 2 2 2 2 2 ...
+ $ intake  : Factor w/ 3 levels "bottom 25%","mid 50%",..: 1 2 3 2 2 1 3 2 2 3 ...
+ $ standLRT: num  0.619 0.206 -1.365 0.206 0.371 ...
+ $ sex     : Factor w/ 2 levels "F","M": 1 1 2 1 1 2 2 2 1 2 ...
+ $ type    : Factor w/ 2 levels "Mxd","Sngl": 1 1 1 1 1 1 1 1 1 1 ...
+ $ student : Factor w/ 650 levels "1","2","3","4",..: 143 145 142 141 138 155 158 115 117 113 ...</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>cor_matrix <span class="ot">&lt;-</span> <span class="fu">cor</span>(exams[<span class="fu">sapply</span>(exams, is.numeric)])</span>
+<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(cor_matrix)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          normexam    schavg  standLRT
+normexam 1.0000000 0.2879365 0.5916496
+schavg   0.2879365 1.0000000 0.3170184
+standLRT 0.5916496 0.3170184 1.0000000</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pairs</span>(<span class="sc">~</span>normexam <span class="sc">+</span> schavg <span class="sc">+</span> standLRT, <span class="at">data =</span> exams)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(exams, <span class="fu">aes</span>(<span class="at">x =</span> schavg, <span class="at">y =</span> normexam)) <span class="sc">+</span></span>
+<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb72-3"><a href="#cb72-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb72-4"><a href="#cb72-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"School Average"</span>, <span class="at">y =</span> <span class="st">"Normalized Exam Score"</span>) <span class="sc">+</span></span>
+<span id="cb72-5"><a href="#cb72-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Relationship between School Average and Exam Score"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`geom_smooth()` using formula = 'y ~ x'</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-11-2.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(exams, <span class="fu">aes</span>(<span class="at">x =</span> standLRT, <span class="at">y =</span> normexam)) <span class="sc">+</span></span>
+<span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb74-3"><a href="#cb74-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb74-4"><a href="#cb74-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Standardized LRT Score"</span>, <span class="at">y =</span> <span class="st">"Normalized Exam Score"</span>) <span class="sc">+</span></span>
+<span id="cb74-5"><a href="#cb74-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Relationship between Standardized LRT Score and Exam Score"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`geom_smooth()` using formula = 'y ~ x'</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-11-3.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb76"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(exams, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">factor</span>(school), <span class="at">y =</span> normexam)) <span class="sc">+</span></span>
+<span id="cb76-2"><a href="#cb76-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb76-3"><a href="#cb76-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Boxplot of normexam by School"</span>,</span>
+<span id="cb76-4"><a href="#cb76-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"School"</span>,</span>
+<span id="cb76-5"><a href="#cb76-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Normexam Score"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-11-4.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb77"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(exams, <span class="fu">aes</span>(schgend, normexam)) <span class="sc">+</span></span>
+<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb77-3"><a href="#cb77-3" aria-hidden="true" tabindex="-1"></a><span class="fu">labs</span>(<span class="at">x=</span><span class="st">"School Gender"</span>, <span class="at">y=</span><span class="st">"Normalized exam scores"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-11-5.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(exams, <span class="fu">aes</span>(vr, normexam)) <span class="sc">+</span></span>
+<span id="cb78-2"><a href="#cb78-2" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb78-3"><a href="#cb78-3" aria-hidden="true" tabindex="-1"></a><span class="fu">labs</span>(<span class="at">x=</span><span class="st">"VR"</span>, <span class="at">y=</span><span class="st">"Normalized exam scores"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-11-6.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb79"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(exams, <span class="fu">aes</span>(intake, normexam)) <span class="sc">+</span></span>
+<span id="cb79-2"><a href="#cb79-2" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb79-3"><a href="#cb79-3" aria-hidden="true" tabindex="-1"></a><span class="fu">labs</span>(<span class="at">x=</span><span class="st">"intake"</span>, <span class="at">y=</span><span class="st">"Normalized exam scores"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-11-7.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb80"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(exams, <span class="fu">aes</span>(sex, normexam)) <span class="sc">+</span></span>
+<span id="cb80-2"><a href="#cb80-2" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb80-3"><a href="#cb80-3" aria-hidden="true" tabindex="-1"></a><span class="fu">labs</span>(<span class="at">x=</span><span class="st">"Sex"</span>, <span class="at">y=</span><span class="st">"Normalized exam scores"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-11-8.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb81"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(exams, <span class="fu">aes</span>(type, normexam)) <span class="sc">+</span></span>
+<span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb81-3"><a href="#cb81-3" aria-hidden="true" tabindex="-1"></a><span class="fu">labs</span>(<span class="at">x=</span><span class="st">"Type"</span>, <span class="at">y=</span><span class="st">"Normalized exam scores"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-11-9.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb82"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(exams<span class="sc">$</span>schgend, exams<span class="sc">$</span>type)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>       
+         Mxd Sngl
+  mixed 2169    0
+  boys     0  513
+  girls    0 1377</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb84"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(exams<span class="sc">$</span>intake, exams<span class="sc">$</span>vr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>            
+             bottom 25% mid 50% top 25%
+  bottom 25%        102     606     468
+  mid 50%           375    1363     606
+  top 25%           163     294      82</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb86"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(exams, <span class="fu">aes</span>(vr, standLRT)) <span class="sc">+</span></span>
+<span id="cb86-2"><a href="#cb86-2" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb86-3"><a href="#cb86-3" aria-hidden="true" tabindex="-1"></a><span class="fu">labs</span>(<span class="at">x=</span><span class="st">"vr"</span>, <span class="at">y=</span><span class="st">"LRT score"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-11-10.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb87"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(exams, <span class="fu">aes</span>(<span class="at">x =</span> type, <span class="at">y =</span> normexam)) <span class="sc">+</span></span>
+<span id="cb87-2"><a href="#cb87-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb87-3"><a href="#cb87-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> sex)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="FinalExamS24B5_files/figure-html/unnamed-chunk-11-11.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Due to the fact that we have multiple variables pertaining to the school as a whole and the school as shown in the boxplot “Boxplot of normexam by School” we can see that school does seem to effect the distribution of scores a multileveled model should be used in this case. <br> There might be a slight interaction between type and sex and LRTscore and vr but no other interaction is observed. <br> School gender seems to show that mixxed schools tend to perform slightly lower. <br> Intake and VR seem to associate with our normalized exam score as a pattern of higher intake to lower exam score seems to show. <br> By gender males tend to perform worse in the exam. <br> It looks like we most likely don’t need both school gender, sex, and type. School gender can be found by both sex and type.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb88"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb88-1"><a href="#cb88-1" aria-hidden="true" tabindex="-1"></a>exams.model_a <span class="ot">&lt;-</span> <span class="fu">lmer</span>(normexam <span class="sc">~</span> standLRT<span class="sc">*</span>vr <span class="sc">+</span> type<span class="sc">*</span>sex <span class="sc">+</span> intake <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>school), Exam)</span>
+<span id="cb88-2"><a href="#cb88-2" aria-hidden="true" tabindex="-1"></a>exams.model_0 <span class="ot">&lt;-</span> <span class="fu">lmer</span>(normexam <span class="sc">~</span> <span class="dv">1</span> <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>school), Exam)</span>
+<span id="cb88-3"><a href="#cb88-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(exams.model_a)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear mixed model fit by REML ['lmerMod']
+Formula: normexam ~ standLRT * vr + type * sex + intake + (1 | school)
+   Data: Exam
+
+REML criterion at convergence: 9124.7
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.6236 -0.6378  0.0373  0.6803  3.4293 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ school   (Intercept) 0.07309  0.2704  
+ Residual             0.53053  0.7284  
+Number of obs: 4059, groups:  school, 65
+
+Fixed effects:
+                   Estimate Std. Error t value
+(Intercept)         0.17304    0.09377   1.845
+standLRT            0.29212    0.03153   9.265
+vrmid 50%           0.13422    0.09584   1.401
+vrtop 25%           0.27215    0.10771   2.527
+typeSngl            0.13801    0.08358   1.651
+sexM               -0.15882    0.03311  -4.797
+intakemid 50%      -0.39933    0.03188 -12.527
+intaketop 25%      -0.77342    0.05353 -14.450
+standLRT:vrmid 50%  0.08153    0.03344   2.438
+standLRT:vrtop 25%  0.17895    0.03825   4.678
+typeSngl:sexM       0.04763    0.11825   0.403
+
+Correlation of Fixed Effects:
+            (Intr) stnLRT vrm50% vrt25% typSng sexM   int50% int25% sLRT:5
+standLRT     0.068                                                        
+vrmid 50%   -0.762 -0.140                                                 
+vrtop 25%   -0.664 -0.122  0.652                                          
+typeSngl    -0.322  0.007  0.004 -0.077                                   
+sexM        -0.187  0.024  0.010  0.014  0.203                            
+intakemd50% -0.258  0.202  0.011  0.014 -0.006 -0.015                     
+intaketp25% -0.211  0.386  0.009  0.012  0.002 -0.016  0.650              
+stndLRT:50% -0.152 -0.813  0.140  0.120  0.000 -0.007  0.082 -0.019       
+stndLRT:25% -0.136 -0.729  0.118  0.052 -0.002 -0.009  0.106 -0.051  0.681
+typSngl:sxM -0.013 -0.004  0.053  0.111 -0.495 -0.278  0.009 -0.002 -0.004
+            sLRT:2
+standLRT          
+vrmid 50%         
+vrtop 25%         
+typeSngl          
+sexM              
+intakemd50%       
+intaketp25%       
+stndLRT:50%       
+stndLRT:25%       
+typSngl:sxM -0.006</code></pre>
+</div>
+</div>
+<p>There is no evidence to show that this model is fitting on the boundary. Interaction between type and sex seems suspect with a t-value of .403.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb90"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a>lr_test <span class="ot">&lt;-</span> <span class="fu">anova</span>(exams.model_a, exams.model_0, <span class="at">test =</span> <span class="st">"Chisq"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>refitting model(s) with ML (instead of REML)</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb92"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(lr_test)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Data: Exam
+Models:
+exams.model_0: normexam ~ 1 + (1 | school)
+exams.model_a: normexam ~ standLRT * vr + type * sex + intake + (1 | school)
+              npar     AIC     BIC  logLik deviance  Chisq Df Pr(&gt;Chisq)    
+exams.model_0    3 11016.6 11035.6 -5505.3  11010.6                         
+exams.model_a   13  9101.7  9183.8 -4537.9   9075.7 1934.9 10  &lt; 2.2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+</div>
+<p>With a P-value of 2.2e-16 this model seems very significant.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb94"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a>exams.model_b <span class="ot">&lt;-</span> <span class="fu">lmer</span>(normexam <span class="sc">~</span> standLRT<span class="sc">*</span>vr <span class="sc">+</span> type <span class="sc">+</span> sex <span class="sc">+</span> intake <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>school), Exam)</span>
+<span id="cb94-2"><a href="#cb94-2" aria-hidden="true" tabindex="-1"></a>lr_test <span class="ot">&lt;-</span> <span class="fu">anova</span>(exams.model_b, exams.model_a, <span class="at">test =</span> <span class="st">"Chisq"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>refitting model(s) with ML (instead of REML)</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb96"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(lr_test)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Data: Exam
+Models:
+exams.model_b: normexam ~ standLRT * vr + type + sex + intake + (1 | school)
+exams.model_a: normexam ~ standLRT * vr + type * sex + intake + (1 | school)
+              npar    AIC    BIC  logLik deviance  Chisq Df Pr(&gt;Chisq)
+exams.model_b   12 9099.9 9175.6 -4538.0   9075.9                     
+exams.model_a   13 9101.7 9183.8 -4537.9   9075.7 0.1731  1     0.6773</code></pre>
+</div>
+</div>
+<p>There is no significant evidence that removing the interaction between type and sex improves the model.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb98"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb98-1"><a href="#cb98-1" aria-hidden="true" tabindex="-1"></a>exams.model_pub <span class="ot">&lt;-</span> <span class="fu">lmer</span>(normexam <span class="sc">~</span> standLRT <span class="sc">+</span> vr <span class="sc">+</span> sex <span class="sc">+</span> (standLRT<span class="sc">|</span>school), Exam)</span>
+<span id="cb98-2"><a href="#cb98-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(exams.model_pub)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear mixed model fit by REML ['lmerMod']
+Formula: normexam ~ standLRT + vr + sex + (standLRT | school)
+   Data: Exam
+
+REML criterion at convergence: 9306.4
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.8243 -0.6369  0.0225  0.6798  3.4289 
+
+Random effects:
+ Groups   Name        Variance Std.Dev. Corr
+ school   (Intercept) 0.08084  0.2843       
+          standLRT    0.01522  0.1234   0.43
+ Residual             0.55016  0.7417       
+Number of obs: 4059, groups:  school, 65
+
+Fixed effects:
+            Estimate Std. Error t value
+(Intercept) -0.02200    0.08121  -0.271
+standLRT     0.54999    0.02027  27.127
+vrmid 50%    0.06527    0.09230   0.707
+vrtop 25%    0.18878    0.10561   1.787
+sexM        -0.17195    0.03233  -5.320
+
+Correlation of Fixed Effects:
+          (Intr) stnLRT vrm50% vrt25%
+standLRT   0.186                     
+vrmid 50% -0.821 -0.033              
+vrtop 25% -0.733 -0.073  0.626       
+sexM      -0.207  0.032  0.027  0.055</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb100"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb100-1"><a href="#cb100-1" aria-hidden="true" tabindex="-1"></a>lr_test <span class="ot">&lt;-</span> <span class="fu">anova</span>(exams.model_a, exams.model_pub, <span class="at">test =</span> <span class="st">"Chisq"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>refitting model(s) with ML (instead of REML)</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb102"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb102-1"><a href="#cb102-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(lr_test)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Data: Exam
+Models:
+exams.model_pub: normexam ~ standLRT + vr + sex + (standLRT | school)
+exams.model_a: normexam ~ standLRT * vr + type * sex + intake + (1 | school)
+                npar    AIC    BIC  logLik deviance  Chisq Df Pr(&gt;Chisq)    
+exams.model_pub    9 9302.4 9359.1 -4642.2   9284.4                         
+exams.model_a     13 9101.7 9183.8 -4537.9   9075.7 208.62  4  &lt; 2.2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb104"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb104-1"><a href="#cb104-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb104-2"><a href="#cb104-2" aria-hidden="true" tabindex="-1"></a>train_indices <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(exams), <span class="fl">0.5</span> <span class="sc">*</span> <span class="fu">nrow</span>(exams))</span>
+<span id="cb104-3"><a href="#cb104-3" aria-hidden="true" tabindex="-1"></a>train_data <span class="ot">&lt;-</span> exams[train_indices, ]</span>
+<span id="cb104-4"><a href="#cb104-4" aria-hidden="true" tabindex="-1"></a>test_data <span class="ot">&lt;-</span> exams[<span class="sc">-</span>train_indices, ]</span>
+<span id="cb104-5"><a href="#cb104-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb104-6"><a href="#cb104-6" aria-hidden="true" tabindex="-1"></a>exams.model_train_a <span class="ot">&lt;-</span> exams.model_a <span class="ot">&lt;-</span> <span class="fu">lmer</span>(normexam <span class="sc">~</span> standLRT<span class="sc">*</span>vr <span class="sc">+</span> type<span class="sc">*</span>sex <span class="sc">+</span> intake <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>school), train_data)</span>
+<span id="cb104-7"><a href="#cb104-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb104-8"><a href="#cb104-8" aria-hidden="true" tabindex="-1"></a>exams.model_train_pub <span class="ot">&lt;-</span> <span class="fu">lmer</span>(normexam <span class="sc">~</span> standLRT <span class="sc">+</span> vr <span class="sc">+</span> sex <span class="sc">+</span> (standLRT<span class="sc">|</span>school), train_data)</span>
+<span id="cb104-9"><a href="#cb104-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb104-10"><a href="#cb104-10" aria-hidden="true" tabindex="-1"></a>test_data<span class="sc">$</span>predicted1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(exams.model_train_a, <span class="at">newdata =</span> test_data)</span>
+<span id="cb104-11"><a href="#cb104-11" aria-hidden="true" tabindex="-1"></a>test_data<span class="sc">$</span>predicted2 <span class="ot">&lt;-</span> <span class="fu">predict</span>(exams.model_train_pub, <span class="at">newdata =</span> test_data)</span>
+<span id="cb104-12"><a href="#cb104-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb104-13"><a href="#cb104-13" aria-hidden="true" tabindex="-1"></a>rmse_model1 <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">mean</span>((test_data<span class="sc">$</span>normexam <span class="sc">-</span> test_data<span class="sc">$</span>predicted1)<span class="sc">^</span><span class="dv">2</span>))</span>
+<span id="cb104-14"><a href="#cb104-14" aria-hidden="true" tabindex="-1"></a>rmse_model2 <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">mean</span>((test_data<span class="sc">$</span>normexam <span class="sc">-</span> test_data<span class="sc">$</span>predicted2)<span class="sc">^</span><span class="dv">2</span>))</span>
+<span id="cb104-15"><a href="#cb104-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb104-16"><a href="#cb104-16" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">"RMSE for model 1:"</span>, rmse_model1))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "RMSE for model 1: 0.733734271531556"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb106"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb106-1"><a href="#cb106-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">"RMSE for model 2:"</span>, rmse_model2))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "RMSE for model 2: 0.746884760045784"</code></pre>
+</div>
+</div>
+<p>This LRtest suggests that we can be extremely (p &lt; 2e-16) confident that my model is better than the published one. After spliting into test and train the RMSE is lower for my model as well. This could be due to my model being more complex in that it is looking at 2 interaction variables as well as type and intake while their model does not do this. All predictors I use that they do not are significant. Their vr is not significant in their model as well as their intercept. This makes the model probably much worse.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb108"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb108-1"><a href="#cb108-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(exams.model_a)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear mixed model fit by REML ['lmerMod']
+Formula: normexam ~ standLRT * vr + type * sex + intake + (1 | school)
+   Data: train_data
+
+REML criterion at convergence: 4636.9
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.5546 -0.6253  0.0362  0.6778  3.2243 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ school   (Intercept) 0.07426  0.2725  
+ Residual             0.53822  0.7336  
+Number of obs: 2029, groups:  school, 65
+
+Fixed effects:
+                   Estimate Std. Error t value
+(Intercept)         0.18973    0.10514   1.805
+standLRT            0.27672    0.04506   6.142
+vrmid 50%           0.14892    0.10342   1.440
+vrtop 25%           0.28058    0.11676   2.403
+typeSngl            0.12787    0.09047   1.413
+sexM               -0.14102    0.04792  -2.943
+intakemid 50%      -0.43353    0.04558  -9.511
+intaketop 25%      -0.84288    0.07799 -10.807
+standLRT:vrmid 50%  0.09619    0.04709   2.043
+standLRT:vrtop 25%  0.21715    0.05498   3.950
+typeSngl:sexM       0.04630    0.13031   0.355
+
+Correlation of Fixed Effects:
+            (Intr) stnLRT vrm50% vrt25% typSng sexM   int50% int25% sLRT:5
+standLRT     0.053                                                        
+vrmid 50%   -0.741 -0.155                                                 
+vrtop 25%   -0.647 -0.135  0.656                                          
+typeSngl    -0.331  0.008  0.003 -0.073                                   
+sexM        -0.232  0.014  0.004  0.027  0.273                            
+intakemd50% -0.318  0.218  0.011  0.014 -0.021 -0.040                     
+intaketp25% -0.261  0.413  0.014  0.016 -0.012 -0.048  0.650              
+stndLRT:50% -0.164 -0.812  0.161  0.136  0.001  0.000  0.062 -0.040       
+stndLRT:25% -0.141 -0.715  0.131  0.045 -0.013 -0.026  0.106 -0.063  0.670
+typSngl:sxM  0.032 -0.003  0.042  0.094 -0.510 -0.363  0.017  0.012 -0.001
+            sLRT:2
+standLRT          
+vrmid 50%         
+vrtop 25%         
+typeSngl          
+sexM              
+intakemd50%       
+intaketp25%       
+stndLRT:50%       
+stndLRT:25%       
+typSngl:sxM  0.003</code></pre>
+</div>
+</div>
+<ol type="1">
+<li><p><strong>Intercept</strong>: All other variables held constant, for individuals with who are female, in a mixed school, and who scored in the lower 25th percentile on the verbal response test and intake test, when standLRT is held constant the expected mean value of normexam is approximately 0.17304.</p></li>
+<li><p><strong>Slope of a Quantitative Predictor (standLRT)</strong>: The expected mean value of normexam increases by approximately 0.29212 for each 1 unit increase in standLRT, for individuals with who are female, in a mixed school, and who scored in the lower 25th percentile on the verbal response test and intake test.</p></li>
+<li><p><strong>Slope of a Categorical Predictor (typeSngl)</strong>: Students at a single sex school will have a mean value of normexam compared to the reference category, for individuals with who are female and who scored in the lower 25th percentile on the verbal response test and intake test, when standLRT is held constant.</p></li>
+<li><p><strong>Interaction Term (standLRT:vrmid 50%)</strong>: For each one-unit increase in standLRT, the expected mean value of normexam increases by an additional 0.08153 units when vrmid 50% is true, for individuals with who are female, in a mixed school, and who scored in the lower 25th percentile on the intake test.</p></li>
+<li><p><strong>Intercept 2nd Level (school)</strong> The variance of the random intercepts for schools is 0.07309, with a standard deviation of 0.2704. This implies there is significant variability in the intercepts across different schools</p></li>
+</ol>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
